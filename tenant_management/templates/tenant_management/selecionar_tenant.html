@@ -1,0 +1,10 @@
+<h1>Selecionar Tenant</h1>
+<ul>
+    {% for tenant in tenants %}
+        <li>
+            <a href="{% url 'tenant_management:login_tenant' tenant.id %}">
+                {{ tenant.name }}
+            </a>
+        </li>
+    {% endfor %}
+</ul>

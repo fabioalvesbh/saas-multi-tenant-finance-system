@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Atualizar foto do perfil</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin:0; font-family: system-ui, sans-serif; background:#020617; color:#e5e7eb; }
+        .page { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem 1rem; }
+        .card { width:100%; max-width:420px; background:#020617; border-radius:1rem;
+                border:1px solid rgba(148,163,184,0.35); box-shadow:0 20px 40px rgba(15,23,42,0.9);
+                padding:1.6rem 1.6rem 1.3rem; }
+        .card-title { font-size:1.05rem; font-weight:600; margin-bottom:0.4rem; }
+        .card-subtitle { font-size:0.85rem; color:#9ca3af; margin-bottom:1rem; }
+        form { display:flex; flex-direction:column; gap:0.8rem; }
+        label { font-size:0.82rem; text-transform:uppercase; letter-spacing:0.08em; color:#9ca3af; margin-bottom:0.25rem; display:block; }
+        input[type="file"] { font-size:0.9rem; }
+        .btn-primary { margin-top:0.4rem; padding:0.6rem 0.9rem; border-radius:999px; border:none;
+                       background:linear-gradient(135deg,#22c55e,#16a34a); color:#022c22; font-weight:600; cursor:pointer; }
+        .btn-secondary { margin-top:0.4rem; padding:0.45rem 0.9rem; border-radius:999px; border:1px solid rgba(148,163,184,0.5);
+                         background:transparent; color:#e5e7eb; cursor:pointer; }
+        .avatar-preview { margin-bottom:0.8rem; display:flex; align-items:center; gap:0.6rem; }
+        .avatar-preview img { width:56px; height:56px; border-radius:999px; object-fit:cover;
+                              border:1px solid rgba(148,163,184,0.6); }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="card">
+        <div class="card-title">Atualizar foto do perfil</div>
+        <div class="card-subtitle">Selecione uma imagem quadrada (recomendado) para usar como avatar no chat.</div>
+
+        {% if request.user.profile.avatar %}
+            <div class="avatar-preview">
+                <img src="{{ request.user.profile.avatar.url }}" alt="Avatar atual">
+                <span style="font-size:0.85rem;color:#9ca3af;">Foto atual</span>
+            </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="id_avatar">Nova foto</label>
+            <input type="file" name="avatar" id="id_avatar" accept="image/*" required>
+            <button type="submit" class="btn-primary">Salvar foto</button>
+        </form>
+        <button class="btn-secondary" onclick="window.location.href='{% url 'chat:home' %}'">Voltar para o chat</button>
+    </div>
+</div>
+</body>
+</html>
+

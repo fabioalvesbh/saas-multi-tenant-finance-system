@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <title>Chat - Comunicação Interna</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#020617">
+    <link rel="icon" type="image/png" href="{% static 'logo/favicon.png' %}">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            height: 100%;
+        }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #020617;
+            color: #e5e7eb;
+        }
+        .layout {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .nav-item {
+            padding: 0.55rem 0.75rem;
+            border-radius: 0.6rem;
+            font-size: 0.92rem;
+            color: #cbd5f5;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(59, 130, 246, 0.25));
+            color: #e5e7eb;
+        }
+        .nav-item span.icon {
+            font-size: 1rem;
+        }
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.25rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+            background: rgba(15, 23, 42, 0.97);
+            backdrop-filter: blur(16px);
+        }
+        .topbar-title {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .brand {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.1rem;
+            margin-top: 4px;
+        }
+        .brand-logo {
+            height: 36px;
+        }
+        .brand-text {
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #38bdf8;
+        }
+        .top-nav {
+            display: flex;
+            gap: 0.4rem;
+        }
+        .top-nav a {
+            text-decoration: none;
+        }
+        .top-nav-button {
+            padding: 0.35rem 0.8rem;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            font-size: 0.85rem;
+            color: #e5e7eb;
+            background: transparent;
+            cursor: pointer;
+        }
+        .top-nav-button.active {
+            background: rgba(37, 99, 235, 0.4);
+            border-color: rgba(96, 165, 250, 0.7);
+        }
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .icon-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: #020617;
+            color: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .icon-button:hover {
+            background: #0b1220;
+        }
+        .notif-wrapper {
+            position: relative;
+        }
+        .notif-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 16px;
+            height: 16px;
+            border-radius: 999px;
+            background: #f97316;
+            color: #020617;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        .notif-dropdown {
+            position: absolute;
+            right: 0;
+            top: 44px;
+            width: 260px;
+            background: #020617;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+            padding: 0.4rem 0;
+            display: none;
+            z-index: 30;
+        }
+        .notif-item {
+            padding: 0.5rem 0.8rem;
+            cursor: pointer;
+            min-height: 44px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .notif-item:hover {
+            background: rgba(30, 64, 175, 0.5);
+        }
+        .notif-title {
+            font-size: 0.86rem;
+        }
+        .notif-meta {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+        .profile-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 999px;
+            background: #020617;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .profile-button span {
+            color: #60a5fa;
+        }
+        .profile-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #bfdbfe;
+            font-weight: 700;
+        }
+        .profile-avatar img {
+            width: 24px;
+            height: 24px;
+            border-radius: 999px;
+            object-fit: cover;
+        }
+        .profile-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 40;
+        }
+        .profile-modal {
+            width: 100%;
+            max-width: 420px;
+            margin: 1rem;
+            background: #020617;
+            border-radius: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.9);
+            padding: 1.6rem 1.7rem 1.4rem;
+            max-height: calc(100vh - 2rem);
+            overflow-y: auto;
+        }
+        .profile-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .profile-modal-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .profile-close {
+            border: none;
+            background: transparent;
+            color: #9ca3af;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        .profile-field-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #6b7280;
+        }
+        .profile-field-value {
+            font-size: 0.9rem;
+            color: #e5e7eb;
+            margin-bottom: 0.7rem;
+        }
+        .profile-section-title {
+            margin-top: 0.8rem;
+            margin-bottom: 0.3rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #9ca3af;
+        }
+        .profile-modal input[type="password"] {
+            width: 100%;
+            padding: 0.55rem 0.7rem;
+            border-radius: 0.6rem;
+            border: 1px solid #4b5563;
+            background: #020617;
+            color: #e5e7eb;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .profile-modal input[type="password"]:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
+        }
+        .profile-actions {
+            margin-top: 0.6rem;
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+        .btn-small-primary {
+            padding: 0.45rem 0.9rem;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #022c22;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .btn-small-ghost {
+            padding: 0.4rem 0.85rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            background: transparent;
+            color: #e5e7eb;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .main {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 0;
+            flex: 1;
+        }
+        .conversations {
+            border-right: 1px solid rgba(148, 163, 184, 0.25);
+            background: #020617;
+            display: flex;
+            flex-direction: column;
+        }
+        .online-users {
+            padding: 0.75rem 0.9rem 0.4rem;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.95);
+        }
+        .online-title {
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #6b7280;
+            margin-bottom: 0.35rem;
+        }
+        .online-dept {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #94a3b8;
+            margin-top: 0.5rem;
+            margin-bottom: 0.2rem;
+            padding-left: 0.15rem;
+        }
+        .online-dept:first-child {
+            margin-top: 0;
+        }
+        .online-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        .online-user {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.8rem;
+            color: #e5e7eb;
+            text-decoration: none;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.9);
+        }
+        .status-online {
+            background: #22c55e;
+        }
+        .status-away {
+            background: #eab308;
+        }
+        .status-offline {
+            background: #ef4444;
+        }
+        .conversations-header {
+            padding: 0.75rem 1rem 0.5rem;
+            font-size: 0.86rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #6b7280;
+        }
+        .conversations-list {
+            padding: 0.25rem 0.5rem 0.75rem;
+            overflow-y: auto;
+        }
+        .conversation-item {
+            padding: 0.6rem 0.75rem;
+            border-radius: 0.65rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            cursor: pointer;
+            color: inherit;
+            text-decoration: none;
+        }
+        .conversation-item.active {
+            background: rgba(37, 99, 235, 0.18);
+        }
+        .conversation-item .top {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+        .conversation-item .name {
+            font-weight: 500;
+        }
+        .conversation-item .badge {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.08rem 0.4rem;
+            border-radius: 999px;
+            background: rgba(34, 197, 94, 0.19);
+            color: #bbf7d0;
+        }
+        .conversation-item .preview {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .chat-main {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .chat-header {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.9);
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+        .chat-header-title {
+            font-size: 0.98rem;
+            font-weight: 500;
+        }
+        .chat-header-subtitle {
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .msg-row {
+            display: flex;
+        }
+        .msg-row.me {
+            justify-content: flex-end;
+        }
+        .msg-bubble {
+            max-width: 70%;
+            padding: 0.45rem 0.7rem;
+            border-radius: 0.75rem;
+            font-size: 0.9rem;
+        }
+        .msg-row.me .msg-bubble {
+            background: rgba(34, 197, 94, 0.2);
+            align-self: flex-end;
+        }
+        .msg-row.other .msg-bubble {
+            background: rgba(30, 64, 175, 0.45);
+        }
+        .msg-meta {
+            margin-top: 0.15rem;
+            font-size: 0.7rem;
+            color: #9ca3af;
+        }
+        .chat-input {
+            padding: 0.7rem 0.9rem;
+            border-top: 1px solid rgba(15, 23, 42, 0.9);
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .chat-input textarea {
+            flex: 1;
+            resize: none;
+            min-height: 38px;
+            max-height: 90px;
+            padding: 0.55rem 0.7rem;
+            border-radius: 0.75rem;
+            border: 1px solid #4b5563;
+            background: #020617;
+            color: #e5e7eb;
+            font-size: 0.9rem;
+        }
+        .chat-input textarea:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
+        }
+        .chat-input button {
+            padding: 0 1rem;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #022c22;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .chat-video-button {
+            padding: 0;
+            border: none;
+            background: transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .chat-video-button:hover,
+        .chat-video-button:active {
+            filter: none;
+            transform: none;
+        }
+        .chat-video-button img {
+            width: 32px;
+            height: 32px;
+        }
+        .chat-attach-button {
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: #020617;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #9ca3af;
+        }
+        .chat-attach-button:hover {
+            background: rgba(15, 23, 42, 0.9);
+        }
+        .meet-now-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 60;
+        }
+        .meet-now-modal {
+            width: 100%;
+            max-width: 1100px;
+            height: 80vh;
+            max-height: 760px;
+            background: #020617;
+            border-radius: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.95);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .meet-now-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.9rem;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.95);
+            font-size: 0.9rem;
+        }
+        .meet-now-modal-title {
+            font-weight: 500;
+        }
+        .meet-now-close {
+            border: none;
+            background: transparent;
+            color: #9ca3af;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        .meet-now-frame {
+            flex: 1;
+            border: none;
+            width: 100%;
+            background: #000;
+        }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            padding-bottom: env(safe-area-inset-bottom, 0);
+            background: rgba(15, 23, 42, 0.98);
+            border-top: 1px solid rgba(31, 41, 55, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: space-around;
+            z-index: 35;
+        }
+        .bottom-nav a {
+            text-decoration: none;
+            color: #9ca3af;
+            font-size: 0.7rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.15rem;
+            min-width: 64px;
+            min-height: 44px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .bottom-nav-icon {
+            font-size: 1.35rem;
+        }
+        .bottom-nav-active {
+            color: #38bdf8;
+        }
+        .chat-back-link {
+            display: none;
+        }
+
+        @media (min-width: 901px) {
+            body {
+                overflow: hidden;
+            }
+            .layout {
+                height: 100vh;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .layout {
+                min-height: 100vh;
+                min-height: 100dvh;
+            }
+            .topbar {
+                padding: 0.5rem 0.75rem;
+                min-height: 52px;
+            }
+            .topbar-left {
+                gap: 0.5rem;
+            }
+            .brand-text {
+                font-size: 0.7rem;
+            }
+            .brand-logo {
+                height: 28px;
+            }
+            .top-nav {
+                display: none;
+            }
+            .main {
+                grid-template-columns: 1fr;
+                flex: 1;
+                min-height: 0;
+            }
+            .main .conversations {
+                min-height: 200px;
+            }
+            .main.has-active-chat .conversations {
+                display: none;
+            }
+            .main:not(.has-active-chat) .chat-main {
+                display: none;
+            }
+            .chat-back-link {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.35rem;
+                padding: 0.4rem 0;
+                margin-bottom: 0.25rem;
+                color: #60a5fa;
+                font-size: 0.9rem;
+                text-decoration: none;
+            }
+            .bottom-nav {
+                display: flex;
+                height: 56px;
+                min-height: calc(56px + env(safe-area-inset-bottom, 0));
+            }
+            body {
+                padding-bottom: calc(56px + env(safe-area-inset-bottom, 0));
+            }
+            .conversation-item,
+            .online-user {
+                min-height: 48px;
+                padding: 0.75rem;
+            }
+            .icon-button {
+                width: 44px;
+                height: 44px;
+            }
+            .profile-button {
+                padding: 0.35rem 0.6rem;
+            }
+            .profile-button span:not(.profile-avatar) {
+                display: none;
+            }
+            .chat-input {
+                padding: 0.6rem 0.75rem;
+            }
+            .chat-input textarea {
+                min-height: 44px;
+                font-size: 16px;
+            }
+            .msg-bubble {
+                max-width: 85%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .brand-text {
+                display: none;
+            }
+            .profile-modal {
+                margin: 0.75rem;
+                max-height: calc(100vh - 1.5rem);
+            }
+            .notif-dropdown {
+                width: min(260px, calc(100vw - 1rem));
+                max-height: 60vh;
+                overflow-y: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <header class="topbar">
+        <div class="topbar-left">
+            <div class="brand">
+                <img src="{% static 'logo/kuttner_do_brasil_branca.png' %}" alt="Kuttner do Brasil" class="brand-logo">
+                <div class="brand-text">Comunicação Interna</div>
+            </div>
+            <div class="top-nav">
+                <a href="{% url 'chat:home' %}">
+                    <button class="top-nav-button active">Chat</button>
+                </a>
+                <a href="{% url 'chamados:home' %}">
+                    <button class="top-nav-button">Chamados</button>
+                </a>
+                <a href="{% url 'chat:meet_now' %}">
+                    <button class="top-nav-button">Reunir agora</button>
+                </a>
+                <a href="{% url 'chat:schedule_meeting' %}">
+                    <button class="top-nav-button">Reuniões</button>
+                </a>
+                {% if request.user.username == "administrator" %}
+                    <a href="{% url 'chamados:dashboard' %}">
+                        <button class="top-nav-button">Dashboard</button>
+                    </a>
+                {% endif %}
+                {% if request.user.is_superuser %}
+                    <a href="{% url 'usuarios:user_list' %}">
+                        <button class="top-nav-button">Usuários</button>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="topbar-actions">
+            <div class="notif-wrapper">
+                <button class="icon-button" title="Notificações" id="notif-button">
+                    🔔
+                </button>
+                <div class="notif-badge" id="notif-count" style="display:none;">0</div>
+                <div class="notif-dropdown" id="notif-dropdown">
+                    <div class="notif-item" id="notif-empty">
+                        <div class="notif-meta">Sem novas mensagens.</div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="profile-button" id="open-profile">
+                <div class="profile-avatar">
+                    {% if request.user.profile.avatar %}
+                        <img src="{{ request.user.profile.avatar.url }}" alt="Avatar">
+                    {% else %}
+                        {{ request.user.username|slice:":1"|upper }}
+                    {% endif %}
+                </div>
+                <span>{{ request.user.username }}</span>
+            </button>
+        </div>
+    </header>
+
+    <section class="main {% if other_user %}has-active-chat{% endif %}">
+        <aside class="conversations">
+            <div class="online-users">
+                <div class="online-title">Usuários no sistema</div>
+                <div class="online-list" id="online-list">
+                    {% for dept_name, profiles in online_profiles_by_department %}
+                        <div class="online-dept">{{ dept_name }}</div>
+                        {% for perfil in profiles %}
+                            <a href="{% url 'chat:with_user' perfil.user.id %}" class="online-user" data-user-id="{{ perfil.user.id }}">
+                                <span class="status-dot status-{{ perfil.status }}"></span>
+                                {% if perfil.avatar %}
+                                    <span class="status-dot" style="width:0;height:0;box-shadow:none;margin-right:0;"></span>
+                                {% endif %}
+                                <span>{% if perfil.avatar %}<img src="{{ perfil.avatar.url }}" alt="Avatar" style="width:18px;height:18px;border-radius:999px;object-fit:cover;margin-right:0.25rem;border:1px solid rgba(15,23,42,0.8);">{% endif %}{{ perfil.display_name|default:perfil.user.username }}</span>
+                            </a>
+                        {% endfor %}
+                    {% empty %}
+                        <span style="font-size: 0.8rem; color: #6b7280;">Nenhum usuário conectado.</span>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="conversations-header">
+                Conversas recentes
+            </div>
+            <div class="conversations-list">
+                {% for conv in recent_conversations %}
+                    <a href="{% url 'chat:with_user' conv.other_id %}"
+                       class="conversation-item {% if active_conversation and conv.id == active_conversation.id %}active{% endif %}"
+                       data-name="{{ conv.other_name }}"
+                       data-user-id="{{ conv.other_id }}">
+                        <div class="top">
+                            <span class="name">{{ conv.other_name }}</span>
+                        </div>
+                        {% if conv.last_text %}
+                            <div class="preview">
+                                {{ conv.last_text|truncatechars:60 }}
+                            </div>
+                        {% endif %}
+                    </a>
+                {% empty %}
+                    <div class="conversation-item">
+                        <div class="preview">
+                            Nenhuma conversa ainda. Clique em um usuário acima para iniciar um chat.
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </aside>
+
+        <main class="chat-main">
+            <div class="chat-header">
+                <a href="{% url 'chat:home' %}" class="chat-back-link">← Conversas</a>
+                <div class="chat-header-title" id="chat-title">
+                    {% if other_user %}
+                        <span style="display:inline-flex;align-items:center;gap:0.4rem;">
+                            {% if other_user.profile.avatar %}
+                                <img src="{{ other_user.profile.avatar.url }}" alt="Avatar"
+                                     style="width:28px;height:28px;border-radius:999px;object-fit:cover;border:1px solid rgba(15,23,42,0.7);">
+                            {% endif %}
+                            <span>{{ other_user.profile.display_name|default:other_user.username }}</span>
+                        </span>
+                    {% else %}
+                        Nenhuma conversa selecionada
+                    {% endif %}
+                </div>
+                <div class="chat-header-subtitle" id="chat-subtitle">
+                    {% if other_user %}
+                        Conversa direta com {{ other_user.profile.display_name|default:other_user.username }}{% if related_chamado_id %} sobre o chamado #{{ related_chamado_id }}{% endif %}.
+                    {% else %}
+                        Escolha uma conversa na lista ao lado para começar a falar com a portaria ou setores internos.
+                    {% endif %}
+                </div>
+            </div>
+            <div class="chat-messages"
+                 id="chat-messages"
+                 data-conversation-id="{% if active_conversation %}{{ active_conversation.id }}{% endif %}"
+                 data-last-id="{{ last_message_id|default:'0' }}">
+                {% if active_conversation %}
+                    {% for msg in messages %}
+                        <div class="msg-row {% if msg.sender_id == request.user.id %}me{% else %}other{% endif %}">
+                            <div class="msg-bubble">
+                                {% if msg.text %}
+                                    <div>{{ msg.text }}</div>
+                                {% endif %}
+                                {% if msg.attachment %}
+                                    <div style="margin-top: 0.25rem;">
+                                        {% with url=msg.attachment.url|lower original=msg.attachment.url %}
+                                            {% if url|slice:"-4:" == ".png" or url|slice:"-4:" == ".jpg" or url|slice:"-4:" == ".gif" or url|slice:"-5:" == ".jpeg" %}
+                                                <a href="{{ original }}" target="_blank" style="display:inline-block;">
+                                                    <img src="{{ original }}" alt="Anexo" style="max-width: 220px; border-radius: 0.5rem; border: 1px solid rgba(15,23,42,0.8);">
+                                                </a>
+                                            {% else %}
+                                                <a href="{{ original }}" target="_blank" style="font-size: 0.85rem; color: #bfdbfe; text-decoration: underline;">
+                                                    Ver arquivo anexado
+                                                </a>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </div>
+                                {% endif %}
+                                <div class="msg-meta">
+                                    {% if msg.sender_id == request.user.id %}
+                                        Você
+                                    {% else %}
+                                        {{ msg.sender.profile.display_name|default:msg.sender.username }}
+                                    {% endif %}
+                                    • {{ msg.created_at|date:"H:i" }}
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="msg-row other">
+                            <div class="msg-bubble">
+                                <div>Nenhuma mensagem ainda. Envie a primeira para iniciar a conversa.</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            {% if other_user %}
+                <form class="chat-input" method="post" action="" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <button type="button" class="chat-video-button" id="start-video-call" title="Iniciar chamada de vídeo">
+                        <img src="{% static 'logo/icone.png' %}" alt="Vídeo">
+                    </button>
+                    <label for="chat-attachment" class="chat-attach-button" title="Anexar arquivo ou imagem">
+                        📎
+                    </label>
+                    <input type="file" name="attachment" id="chat-attachment" style="display:none">
+                    <textarea name="text" placeholder="Digite uma mensagem para {{ other_user.profile.display_name|default:other_user.username }}..."></textarea>
+                    <button type="submit">Enviar</button>
+                </form>
+            {% endif %}
+        </main>
+    </section>
+    </div>
+
+<div class="profile-modal-backdrop" id="profile-modal">
+    <div class="profile-modal">
+        <div class="profile-modal-header">
+            <div class="profile-modal-title">Perfil</div>
+            <button class="profile-close" type="button" id="close-profile">×</button>
+        </div>
+        <div>
+            <div class="profile-field-label">Foto</div>
+            <div class="profile-field-value" style="display:flex;align-items:center;gap:0.6rem;">
+                {% if request.user.profile.avatar %}
+                    <img src="{{ request.user.profile.avatar.url }}" alt="Avatar"
+                         style="width:48px;height:48px;border-radius:999px;object-fit:cover;border:1px solid rgba(148,163,184,0.6);">
+                {% else %}
+                    <span style="font-size:0.85rem;color:#9ca3af;">Nenhuma foto cadastrada.</span>
+                {% endif %}
+                <a href="{% url 'usuarios:update_avatar' %}" class="btn-small-primary" style="padding:0.3rem 0.7rem;font-size:0.8rem;">
+                    Alterar foto
+                </a>
+            </div>
+            <div class="profile-field-label">Nome</div>
+            <div class="profile-field-value">
+                {{ request.user.profile.display_name|default:request.user.get_username }}
+            </div>
+            <div class="profile-field-label">Departamento</div>
+            <div class="profile-field-value">
+                {{ request.user.profile.department|default:"—" }}
+            </div>
+            <div class="profile-field-label">E-mail</div>
+            <div class="profile-field-value">
+                {{ request.user.email|default:"—" }}
+            </div>
+        </div>
+
+        <div class="profile-section-title">Atualizar senha</div>
+        <form method="post" action="{% url 'usuarios:update_password' %}">
+            {% csrf_token %}
+            <input type="password" name="new_password1" placeholder="Nova senha" required>
+            <input type="password" name="new_password2" placeholder="Confirmar nova senha" required>
+            <div class="profile-actions">
+                <button type="submit" class="btn-small-primary">Salvar senha</button>
+            </div>
+        </form>
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <div class="profile-actions" style="margin-top: 0.5rem;">
+                <button type="submit" class="btn-small-ghost">Sair</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="meet-now-modal-backdrop" id="meet-now-modal">
+    <div class="meet-now-modal">
+        <div class="meet-now-modal-header">
+            <div class="meet-now-modal-title">Reunião agora</div>
+            <button type="button" class="meet-now-close" id="meet-now-close">×</button>
+        </div>
+        <iframe id="meet-now-iframe" class="meet-now-frame" allow="camera; microphone; fullscreen; display-capture"></iframe>
+    </div>
+</div>
+
+<nav class="bottom-nav">
+    <a href="{% url 'chat:home' %}" class="bottom-nav-active">
+        <span class="bottom-nav-icon">💬</span>
+        <span>Chat</span>
+    </a>
+    <a href="{% url 'chamados:home' %}">
+        <span class="bottom-nav-icon">📂</span>
+        <span>Chamados</span>
+    </a>
+    {% if request.user.username == "administrator" %}
+        <a href="{% url 'chamados:dashboard' %}">
+            <span class="bottom-nav-icon">📊</span>
+            <span>Dashboard</span>
+        </a>
+    {% endif %}
+    {% if request.user.is_superuser %}
+        <a href="{% url 'usuarios:user_list' %}">
+            <span class="bottom-nav-icon">⚙️</span>
+            <span>Usuários</span>
+        </a>
+    {% endif %}
+</nav>
+
+<script>
+    const title = document.getElementById("chat-title");
+    const subtitle = document.getElementById("chat-subtitle");
+
+    // A navegação para o chat agora é feita por links <a>,
+    // o que melhora o comportamento em dispositivos móveis.
+
+    async function refreshOnlineUsers() {
+        try {
+            const response = await fetch("{% url 'chat:online_users' %}", {
+                headers: {"X-Requested-With": "XMLHttpRequest"},
+            });
+            if (!response.ok) return;
+            const data = await response.json();
+            const container = document.getElementById("online-list");
+            container.innerHTML = "";
+            const groups = data.groups || [];
+            if (!groups.length) {
+                const span = document.createElement("span");
+                span.style.fontSize = "0.8rem";
+                span.style.color = "#6b7280";
+                span.textContent = "Nenhum usuário conectado.";
+                container.appendChild(span);
+                return;
+            }
+            groups.forEach(function (group) {
+                const deptEl = document.createElement("div");
+                deptEl.className = "online-dept";
+                deptEl.textContent = group.department;
+                container.appendChild(deptEl);
+                (group.users || []).forEach(function (user) {
+                    const a = document.createElement("a");
+                    a.className = "online-user";
+                    a.setAttribute("data-user-id", user.id);
+                    a.href = "/chat/with/" + user.id + "/";
+                    const dot = document.createElement("span");
+                    dot.className = "status-dot status-" + user.status;
+                    const name = document.createElement("span");
+                    name.textContent = user.name;
+                    a.appendChild(dot);
+                    a.appendChild(name);
+                    container.appendChild(a);
+                });
+            });
+        } catch (e) {
+            // silencioso em caso de erro
+        }
+    }
+
+    setInterval(refreshOnlineUsers, 2000);
+
+    async function refreshMessages() {
+        const container = document.getElementById("chat-messages");
+        if (!container) return;
+        const convId = container.getAttribute("data-conversation-id");
+        if (!convId) return;
+        const lastId = container.getAttribute("data-last-id") || "0";
+        try {
+            const response = await fetch(`/chat/conversation/${convId}/messages/?after=${lastId}`, {
+                headers: {"X-Requested-With": "XMLHttpRequest"},
+            });
+            if (!response.ok) return;
+            const data = await response.json();
+            if (!data.messages.length) return;
+            data.messages.forEach(msg => {
+                const row = document.createElement("div");
+                row.className = "msg-row " + (msg.is_me ? "me" : "other");
+                const bubble = document.createElement("div");
+                bubble.className = "msg-bubble";
+
+                if (msg.text) {
+                    const textDiv = document.createElement("div");
+                    textDiv.textContent = msg.text;
+                    bubble.appendChild(textDiv);
+                }
+
+                if (msg.attachment_url) {
+                    const attachWrapper = document.createElement("div");
+                    attachWrapper.style.marginTop = "0.25rem";
+                    const lower = msg.attachment_url.toLowerCase();
+                    if (lower.endsWith(".png") || lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".gif")) {
+                        const a = document.createElement("a");
+                        a.href = msg.attachment_url;
+                        a.target = "_blank";
+                        const img = document.createElement("img");
+                        img.src = msg.attachment_url;
+                        img.alt = "Anexo";
+                        img.style.maxWidth = "220px";
+                        img.style.borderRadius = "0.5rem";
+                        img.style.border = "1px solid rgba(15,23,42,0.8)";
+                        a.appendChild(img);
+                        attachWrapper.appendChild(a);
+                    } else {
+                        const a = document.createElement("a");
+                        a.href = msg.attachment_url;
+                        a.target = "_blank";
+                        a.textContent = "Ver arquivo anexado";
+                        a.style.fontSize = "0.85rem";
+                        a.style.color = "#bfdbfe";
+                        a.style.textDecoration = "underline";
+                        attachWrapper.appendChild(a);
+                    }
+                    bubble.appendChild(attachWrapper);
+                }
+
+                const metaDiv = document.createElement("div");
+                metaDiv.className = "msg-meta";
+                metaDiv.textContent = (msg.is_me ? "Você" : msg.sender_name) + " • " + msg.time;
+                bubble.appendChild(metaDiv);
+
+                row.appendChild(bubble);
+                container.appendChild(row);
+                container.setAttribute("data-last-id", msg.id);
+                container.scrollTop = container.scrollHeight;
+
+                // Se for um convite de chamada de vídeo recebido, abrir automaticamente o popup da reunião.
+                try {
+                    if (
+                        !msg.is_me &&
+                        msg.text &&
+                        msg.text.startsWith("Convite para chamada de vídeo:")
+                    ) {
+                        const parts = msg.text.split(" ");
+                        const possibleUrl = parts[parts.length - 1];
+                        if (possibleUrl && possibleUrl.startsWith("http")) {
+                            if (window.openMeetNowFromChat) {
+                                window.openMeetNowFromChat(possibleUrl);
+                            }
+                        }
+                    }
+                } catch (e) {
+                    // silencioso se algo der errado ao tentar abrir o popup
+                }
+            });
+        } catch (e) {
+            // silencioso
+        }
+    }
+
+    setInterval(refreshMessages, 2000);
+
+    // Ao abrir uma conversa, garantir que a lista role até a última mensagem.
+    (function () {
+        const container = document.getElementById("chat-messages");
+        if (!container) return;
+        // Executa logo após o carregamento inicial do DOM.
+        window.addEventListener("load", () => {
+            try {
+                container.scrollTop = container.scrollHeight;
+            } catch (e) {
+                // silencioso
+            }
+        });
+    })();
+
+    const notifButton = document.getElementById("notif-button");
+    const notifCount = document.getElementById("notif-count");
+    const notifDropdown = document.getElementById("notif-dropdown");
+    const notifEmpty = document.getElementById("notif-empty");
+
+    if (notifButton && notifDropdown) {
+        notifButton.addEventListener("click", () => {
+            const visible = notifDropdown.style.display === "block";
+            notifDropdown.style.display = visible ? "none" : "block";
+        });
+        document.addEventListener("click", (event) => {
+            if (
+                !notifDropdown.contains(event.target) &&
+                !notifButton.contains(event.target)
+            ) {
+                notifDropdown.style.display = "none";
+            }
+        });
+    }
+
+    let lastNotifTotal = 0;
+    let audioCtx = null;
+
+    function initAudioContext() {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            if (!audioCtx) {
+                audioCtx = new AudioCtx();
+            }
+        } catch (e) {
+            audioCtx = null;
+        }
+    }
+
+    document.addEventListener(
+        "click",
+        () => {
+            initAudioContext();
+        },
+        { once: true }
+    );
+
+    function playNotificationSound() {
+        try {
+            if (!audioCtx) return;
+            const oscillator = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            oscillator.type = "sine";
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            oscillator.connect(gain);
+            gain.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.15);
+        } catch (e) {
+            // se o navegador bloquear áudio, ignore
+        }
+    }
+
+    function canShowDesktopNotification() {
+        return (
+            "Notification" in window &&
+            Notification.permission === "granted" &&
+            document.visibilityState !== "visible"
+        );
+    }
+
+    function requestNotificationPermissionIfNeeded() {
+        if (!("Notification" in window)) {
+            return;
+        }
+        if (Notification.permission === "default") {
+            Notification.requestPermission();
+        }
+    }
+
+    if (notifButton) {
+        notifButton.addEventListener("click", () => {
+            requestNotificationPermissionIfNeeded();
+        });
+    }
+
+    async function refreshNotifications() {
+        try {
+            const response = await fetch("{% url 'chat:notifications' %}", {
+                headers: {"X-Requested-With": "XMLHttpRequest"},
+            });
+            if (!response.ok) return;
+            const data = await response.json();
+            if (!notifCount || !notifDropdown || !notifEmpty) return;
+            if (!data.total) {
+                notifCount.style.display = "none";
+                notifEmpty.style.display = "block";
+                // remove outros itens
+                Array.from(notifDropdown.querySelectorAll(".notif-item"))
+                    .slice(1)
+                    .forEach((el) => el.remove());
+                return;
+            }
+            if (data.total > lastNotifTotal) {
+                const onlyNew = data.items.slice(0, data.total - lastNotifTotal);
+                playNotificationSound();
+
+                if (canShowDesktopNotification()) {
+                    onlyNew.forEach((item) => {
+                        const body =
+                            (item.last_text || "Nova mensagem") +
+                            " (" +
+                            item.count +
+                            (item.count > 1 ? " mensagens)" : " mensagem)");
+                        const n = new Notification(item.name, {
+                            body: body,
+                            icon: "{% static 'logo/kuttner_do_brasil_branca.png' %}",
+                        });
+                        n.onclick = () => {
+                            window.focus();
+                            window.location.href = "/chat/with/" + item.user_id + "/";
+                            n.close();
+                        };
+                    });
+                }
+            }
+            lastNotifTotal = data.total;
+
+            notifCount.textContent = data.total;
+            notifCount.style.display = "flex";
+            notifEmpty.style.display = "none";
+
+            // limpar itens antigos (menos o notif-empty)
+            Array.from(notifDropdown.querySelectorAll(".notif-item"))
+                .slice(1)
+                .forEach((el) => el.remove());
+
+            data.items.forEach((item) => {
+                const el = document.createElement("div");
+                el.className = "notif-item";
+                el.addEventListener("click", () => {
+                    window.location.href = "/chat/with/" + item.user_id + "/";
+                });
+                const title = document.createElement("div");
+                title.className = "notif-title";
+                title.textContent = item.name;
+                const meta = document.createElement("div");
+                meta.className = "notif-meta";
+                meta.textContent =
+                    item.last_text + " • " + item.time_display + " (" + item.count + ")";
+                el.appendChild(title);
+                el.appendChild(meta);
+                notifDropdown.appendChild(el);
+            });
+        } catch (e) {
+            // silencioso
+        }
+    }
+
+    setInterval(refreshNotifications, 2000);
+
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+            navigator.serviceWorker.register("/service-worker.js");
+        });
+    }
+
+    const profileModal = document.getElementById("profile-modal");
+    const openProfile = document.getElementById("open-profile");
+    const closeProfile = document.getElementById("close-profile");
+
+    if (openProfile && profileModal && closeProfile) {
+        openProfile.addEventListener("click", () => {
+            profileModal.style.display = "flex";
+        });
+        closeProfile.addEventListener("click", () => {
+            profileModal.style.display = "none";
+        });
+        profileModal.addEventListener("click", (event) => {
+            if (event.target === profileModal) {
+                profileModal.style.display = "none";
+            }
+        });
+    }
+
+    // Enviar mensagem com Enter (Shift+Enter = nova linha),
+    // iniciar vídeo Jitsi (com convite no chat) e permitir colar imagem/arquivo do clipboard.
+    (function () {
+        const chatForm = document.querySelector(".chat-input");
+        if (!chatForm) return;
+
+        const textarea = chatForm.querySelector("textarea[name='text']");
+        const fileInput = chatForm.querySelector("input[type='file'][name='attachment']");
+        const csrfInput = chatForm.querySelector("input[name='csrfmiddlewaretoken']");
+
+        function getCsrfToken() {
+            return csrfInput ? csrfInput.value : "";
+        }
+
+        async function sendAttachmentAjax(file, textValue) {
+            const formData = new FormData();
+            if (file) {
+                formData.append("attachment", file);
+            }
+            if (textValue) {
+                formData.append("text", textValue);
+            }
+            const csrfToken = getCsrfToken();
+            try {
+                const response = await fetch(window.location.href, {
+                    method: "POST",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "X-CSRFToken": csrfToken,
+                    },
+                    body: formData,
+                });
+                if (!response.ok) return;
+                if (textarea) {
+                    textarea.value = "";
+                }
+                const container = document.getElementById("chat-messages");
+                if (container) {
+                    const lastId = container.getAttribute("data-last-id") || "0";
+                    container.setAttribute("data-last-id", lastId);
+                }
+                await refreshMessages();
+            } catch (e) {
+                // silencioso em caso de erro
+            }
+        }
+
+        async function sendVideoInvite(textValue) {
+            const formData = new FormData();
+            if (textValue) {
+                formData.append("text", textValue);
+            }
+            const csrfToken = getCsrfToken();
+            try {
+                await fetch(window.location.href, {
+                    method: "POST",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "X-CSRFToken": csrfToken,
+                    },
+                    body: formData,
+                });
+                await refreshMessages();
+            } catch (e) {
+                // silencioso em caso de erro
+            }
+        }
+
+        if (textarea) {
+            textarea.addEventListener("keydown", (event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    const value = (textarea.value || "").trim();
+                    if (!value) {
+                        return;
+                    }
+                    chatForm.submit();
+                }
+            });
+
+            textarea.addEventListener("paste", (event) => {
+                if (!event.clipboardData) {
+                    return;
+                }
+                const items = event.clipboardData.items;
+                if (!items || !items.length) {
+                    return;
+                }
+                let file = null;
+                for (let i = 0; i < items.length; i++) {
+                    const it = items[i];
+                    if (it.kind === "file") {
+                        const f = it.getAsFile();
+                        if (f) {
+                            file = f;
+                            break;
+                        }
+                    }
+                }
+                if (file) {
+                    event.preventDefault();
+                    const textValue = (textarea.value || "").trim();
+                    sendAttachmentAjax(file, textValue);
+                }
+            });
+        }
+
+        if (fileInput) {
+            fileInput.addEventListener("change", () => {
+                if (fileInput.files && fileInput.files[0]) {
+                    const file = fileInput.files[0];
+                    const textValue = textarea ? (textarea.value || "").trim() : "";
+                    sendAttachmentAjax(file, textValue);
+                    fileInput.value = "";
+                }
+            });
+        }
+
+        const videoBtn = document.getElementById("start-video-call");
+        if (videoBtn) {
+            videoBtn.addEventListener("click", async () => {
+                const messagesContainer = document.getElementById("chat-messages");
+                if (!messagesContainer) return;
+                const convId = messagesContainer.getAttribute("data-conversation-id");
+                if (!convId) return;
+                const roomName = `kuttner-chat-conv-${convId}`;
+                const url = `https://meet.kuttner.com.br/${encodeURIComponent(roomName)}`;
+
+                // Envia automaticamente uma mensagem no chat com o link da chamada
+                const inviteText = `Convite para chamada de vídeo: ${url}`;
+                await sendVideoInvite(inviteText);
+
+                // Abre a chamada em popup dentro do sistema
+                const meetModal = document.getElementById("meet-now-modal");
+                const meetFrame = document.getElementById("meet-now-iframe");
+                if (meetModal && meetFrame) {
+                    meetFrame.src = url;
+                    meetModal.style.display = "flex";
+                } else {
+                    // se por algum motivo o modal não existir, cai no comportamento antigo
+                    window.open(url, "_blank", "noopener");
+                }
+            });
+        }
+    })();
+    (function () {
+        const meetNowHref = "{% url 'chat:meet_now' %}";
+        const meetModal = document.getElementById("meet-now-modal");
+        const meetFrame = document.getElementById("meet-now-iframe");
+        const meetClose = document.getElementById("meet-now-close");
+        if (!meetModal || !meetFrame || !meetClose) return;
+
+        function openMeetNow(url) {
+            meetFrame.src = url;
+            meetModal.style.display = "flex";
+        }
+
+        function closeMeetNow() {
+            meetModal.style.display = "none";
+            meetFrame.src = "";
+        }
+
+        meetClose.addEventListener("click", closeMeetNow);
+        meetModal.addEventListener("click", (event) => {
+            if (event.target === meetModal) {
+                closeMeetNow();
+            }
+        });
+
+        // expõe função para ser usada em outras partes (ex.: convite automático de vídeo)
+        window.openMeetNowFromChat = openMeetNow;
+
+        const meetLinks = document.querySelectorAll('a[href="' + meetNowHref + '"]');
+        meetLinks.forEach((link) => {
+            link.addEventListener("click", async (event) => {
+                event.preventDefault();
+                try {
+                    const response = await fetch(meetNowHref, {
+                        headers: {"X-Requested-With": "XMLHttpRequest"},
+                    });
+                    if (!response.ok) {
+                        window.location.href = meetNowHref;
+                        return;
+                    }
+                    const data = await response.json();
+                    if (!data.room_url) {
+                        window.location.href = meetNowHref;
+                        return;
+                    }
+                    openMeetNow(data.room_url);
+                } catch (e) {
+                    window.location.href = meetNowHref;
+                }
+            });
+        });
+    })();
+</script>
+</body>
+</html>
+

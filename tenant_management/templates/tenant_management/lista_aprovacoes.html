@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Solicitações de Exclusão de Tenants</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="{% static 'logo/Road-icon.png' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .logo {
+            display: block;
+            margin: 0 auto 20px auto;
+            max-width: 300px;
+            height: auto;
+        }
+
+        .user-info-box {
+            text-align: right;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .user-info-box strong {
+            display: inline-block;
+            min-width: 160px;
+            color: #444;
+        }
+
+        .online-users {
+            margin-top: 5px;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #2c3e50;
+            color: white;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            text-decoration: none;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .btn-approve {
+            background-color: #28a745;
+        }
+
+        .btn-reject {
+            background-color: #dc3545;
+        }
+
+        .warning {
+            background: #fff3cd;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 5px solid #ffa000;
+            border-radius: 5px;
+            font-size: 15px;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Solicitações de Exclusão de Tenants</h1>
+
+        <div class="warning">
+            <strong>Atenção:</strong> Ao aprovar uma solicitação, o schema e os dados do tenant serão <u>permanentemente excluídos</u>.
+            Essa ação será registrada com IP, horário, usuário e data para fins de auditoria.
+        </div>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Tenant</th>
+                <th>Schema</th>
+                <th>Solicitado por</th>
+                <th>Data da Solicitação</th>
+                <th>Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for req in pendentes %}
+                <tr>
+                    <td>{{ req.tenant.name }}</td>
+                    <td>{{ req.tenant.schema_name }}</td>
+                    <td>{{ req.requested_by.username }}</td>
+                    <td>{{ req.requested_at|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        <form method="post" action="{% url 'tenant_management:aprovar_exclusao' req.id %}" style="display:inline-block">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-approve">Aprovar</button>
+                        </form>
+                        <form method="post" action="{% url 'tenant_management:rejeitar_exclusao_tenant' req.id %}" style="display:inline-block">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-reject">Rejeitar</button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">Nenhuma solicitação pendente no momento.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

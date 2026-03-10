@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar usuário - Administração</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; font-family: system-ui, sans-serif; background: #020617; color: #e5e7eb; }
+        .page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
+        .card { width: 100%; max-width: 520px; background: #020617; border-radius: 1rem; border: 1px solid rgba(148, 163, 184, 0.35); padding: 1.75rem; }
+        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.3rem; }
+        .card-subtitle { font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.2rem; }
+        form { display: flex; flex-direction: column; gap: 0.8rem; }
+        label { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; display: block; margin-bottom: 0.25rem; }
+        input, select { width: 100%; padding: 0.55rem 0.7rem; border-radius: 0.6rem; border: 1px solid #4b5563; background: #020617; color: #e5e7eb; font-size: 0.92rem; }
+        .btn-primary { margin-top: 0.6rem; padding: 0.6rem 0.9rem; border-radius: 999px; border: none; background: linear-gradient(135deg, #22c55e, #16a34a); color: #022c22; font-weight: 600; cursor: pointer; }
+        .btn-secondary { margin-top: 0.4rem; padding: 0.45rem 0.9rem; border-radius: 999px; border: 1px solid rgba(148, 163, 184, 0.5); background: transparent; color: #e5e7eb; cursor: pointer; }
+        .field { display: flex; flex-direction: column; }
+        .errorlist { list-style: none; padding: 0.5rem 0.7rem; margin: 0 0 0.5rem; border-radius: 0.5rem; background: rgba(248, 113, 113, 0.15); color: #fecaca; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="card">
+        <div class="card-title">Editar usuário</div>
+        <div class="card-subtitle">Altere os dados do colaborador. Deixe a senha em branco para não alterar.</div>
+        {% if form.non_field_errors %}
+            <ul class="errorlist">{% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="field"><label for="{{ form.username.id_for_label }}">Usuário</label>{{ form.username }}</div>
+            <div class="field"><label for="{{ form.full_name.id_for_label }}">Nome completo</label>{{ form.full_name }}</div>
+            <div class="field"><label for="{{ form.company.id_for_label }}">Empresa</label>{{ form.company }}</div>
+            <div class="field"><label for="{{ form.department.id_for_label }}">Departamento</label>{{ form.department }}</div>
+            <div class="field"><label for="{{ form.display_name.id_for_label }}">Nome exibido</label>{{ form.display_name }}</div>
+            <div class="field"><label for="{{ form.role.id_for_label }}">Função</label>{{ form.role }}</div>
+            <div class="field"><label for="{{ form.email.id_for_label }}">E-mail</label>{{ form.email }}</div>
+            <div class="field"><label for="{{ form.password.id_for_label }}">Nova senha (opcional)</label>{{ form.password }}</div>
+            <button type="submit" class="btn-primary">Salvar alterações</button>
+        </form>
+        <button class="btn-secondary" onclick="window.location.href='{% url 'usuarios:user_list' %}'">Cancelar</button>
+    </div>
+</div>
+</body>
+</html>

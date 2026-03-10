@@ -1,0 +1,171 @@
+{% extends "base_aero.html" %}
+{% load static %}
+
+{% block title %}Gerenciamento de Tenants - ROAD{% endblock %}
+
+{% block page_title %}Gerenciamento de Tenants{% endblock %}
+
+{% block sidebar_nav %}
+<div class="aero-sidebar-nav">
+    <a href="{% url 'tenant_management:tenant_list' %}" class="aero-nav-item active">
+        <i class="bi bi-building"></i>
+        <span>Lista de Tenants</span>
+    </a>
+    <a href="{% url 'tenant_management:register_tenant' %}" class="aero-nav-item">
+        <i class="bi bi-plus-circle"></i>
+        <span>Novo Tenant</span>
+    </a>
+    <a href="{% url 'tenant_management:lista_assinaturas' %}" class="aero-nav-item">
+        <i class="bi bi-file-earmark-check"></i>
+        <span>Assinaturas</span>
+    </a>
+    <a href="{% url 'tenant_management:painel_cag_adm' %}" class="aero-nav-item">
+        <i class="bi bi-speedometer2"></i>
+        <span>Painel Admin</span>
+    </a>
+    <div class="aero-divider"></div>
+    <a href="/admin/" class="aero-nav-item">
+        <i class="bi bi-gear"></i>
+        <span>Configurações</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="aero-text-gradient mb-0">Tenants Cadastrados</h2>
+    <a href="{% url 'tenant_management:register_tenant' %}" class="aero-btn aero-btn-primary">
+        <i class="bi bi-plus-circle"></i> Novo Tenant
+    </a>
+</div>
+
+<div class="aero-card">
+    <div class="table-responsive">
+        <table class="aero-table">
+            <thead>
+                <tr>
+                    <th><i class="bi bi-building me-2"></i>Nome</th>
+                    <th><i class="bi bi-code-square me-2"></i>Schema</th>
+                    <th><i class="bi bi-calendar-check me-2"></i>Plano</th>
+                    <th><i class="bi bi-calendar-event me-2"></i>Expira em</th>
+                    <th><i class="bi bi-toggle-on me-2"></i>Status</th>
+                    <th><i class="bi bi-gear me-2"></i>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tenant in tenants %}
+                <tr>
+                    <td>
+                        <strong>{{ tenant.name }}</strong>
+                        {% if tenant.email %}
+                        <br><small class="text-muted">{{ tenant.email }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <code class="aero-badge">{{ tenant.schema_name }}</code>
+                    </td>
+                    <td>
+                        <span class="aero-badge aero-badge-{% if tenant.plano == 'trial' %}warning{% elif tenant.plano == 'anual' %}success{% else %}primary{% endif %}">
+                            {{ tenant.get_plano_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if tenant.paid_until %}
+                            {{ tenant.paid_until|date:"d/m/Y" }}
+                            {% if tenant.paid_until < today %}
+                                <span class="aero-badge aero-badge-danger ms-2">Expirado</span>
+                            {% elif tenant.paid_until|days_until < 7 %}
+                                <span class="aero-badge aero-badge-warning ms-2">Expirando</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if tenant.on_trial %}
+                            <span class="aero-badge aero-badge-warning">Trial</span>
+                        {% else %}
+                            <span class="aero-badge aero-badge-success">Ativo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'tenant_management:edit_tenant' tenant.id %}"
+                               class="aero-btn aero-btn-secondary btn-sm"
+                               title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% if tenant.schema_name != 'public' %}
+                            <a href="{% url 'tenant_management:solicitar_exclusao_tenant' tenant.id %}"
+                               class="aero-btn aero-btn-outline btn-sm text-danger"
+                               title="Excluir"
+                               onclick="return confirm('Tem certeza que deseja solicitar a exclusão deste tenant?');">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <i class="bi bi-inbox" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <p class="mt-3 text-muted">Nenhum tenant cadastrado ainda.</p>
+                        <a href="{% url 'tenant_management:register_tenant' %}" class="aero-btn aero-btn-primary mt-2">
+                            <i class="bi bi-plus-circle"></i> Criar Primeiro Tenant
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Estatísticas Rápidas -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="aero-card aero-card-sm text-center">
+            <h3 class="aero-text-gradient mb-2">{{ tenants|length }}</h3>
+            <p class="text-muted mb-0">Total de Tenants</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="aero-card aero-card-sm text-center">
+            <h3 class="text-warning mb-2">{{ tenants|length|add:"-1" }}</h3>
+            <p class="text-muted mb-0">Em Trial</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="aero-card aero-card-sm text-center">
+            <h3 class="text-success mb-2">0</h3>
+            <p class="text-muted mb-0">Ativos</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="aero-card aero-card-sm text-center">
+            <h3 class="text-danger mb-2">0</h3>
+            <p class="text-muted mb-0">Expirados</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Adiciona efeito de hover suave nas linhas da tabela
+    document.querySelectorAll('.aero-table tbody tr').forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.01)';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+</script>
+{% endblock %}
+
+
+
+
+

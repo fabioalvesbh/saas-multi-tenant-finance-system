@@ -1,0 +1,299 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerenciamento de Tenants</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a2e3e6f245.js" crossorigin="anonymous"></script>
+
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      background-color: #f4f6f8;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .btn-voltar {
+      display: inline-block;
+      margin-bottom: 20px;
+      background-color: #6c757d;
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 5px;
+      text-decoration: none;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2c3e50;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background-color: #2c3e50;
+      color: white;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 6px 14px;
+      font-size: 14px;
+      border-radius: 5px;
+      color: white;
+      text-decoration: none;
+    }
+
+    .btn-edit {
+      background-color: #3498db;
+    }
+
+    .btn-danger {
+      background-color: #e74c3c;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .modal {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      text-align: center;
+    }
+
+    .modal img.logo {
+      max-width: 160px;
+      margin-bottom: 10px;
+    }
+
+    .modal input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      margin: 12px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .modal label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .modal .countdown {
+      margin: 10px 0;
+      color: #c0392b;
+      font-weight: bold;
+    }
+
+    .modal .btn {
+      width: 100%;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+
+  <div class="header-container" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px 0 20px;">
+
+    <!-- Logotipo à esquerda -->
+    <img src="{% static 'logo/road.png' %}"
+        alt="ROAD Logo"
+        style="max-width: 200px; height: auto;"
+        onerror="this.style.display='none'">
+
+    <!-- Botão à direita -->
+    <a href="{% url 'tenant_management:painel_cag_adm' %}"
+      class="btn-voltar"
+      style="display: inline-block; background-color: #2c3e50; color: white; padding: 8px 18px; border-radius: 5px; text-decoration: none;">
+      <i class="fas fa-home"></i> Voltar ao Painel
+    </a>
+  </div>
+
+  <!-- Título centralizado -->
+  <h2 style="text-align: center; margin: 30px 0 20px; color: #2c3e50;">Lista de Tenants</h2>
+
+
+
+
+
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Schema</th>
+          <th>Data de Expiração</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tenant in tenants %}
+        <tr>
+          <td>{{ tenant.name }}</td>
+          <td>{{ tenant.schema_name }}</td>
+          <td>{{ tenant.paid_until|date:"d \\d\\e F \\d\\e Y" }}</td>
+          <td class="actions">
+            <a href="{% url 'tenant_management:edit_tenant' tenant.id %}" class="btn btn-edit">
+              <i class="fas fa-edit"></i> Editar
+            </a>
+            {% if tenant.schema_name != 'public' %}
+            <a href="javascript:void(0);" class="btn btn-danger solicitar-exclusao"
+               data-href="{% url 'tenant_management:solicitar_exclusao_tenant' tenant.id %}"
+               data-tenant-name="{{ tenant.name|escape }}">
+              <i class="fas fa-trash"></i> Solicitar Exclusão
+            </a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal-exclusao-tenant" class="modal-overlay">
+    <div class="modal" role="dialog" aria-modal="true">
+      <img src="{% static 'logo/road.png' %}" alt="ROAD Logo"
+          class="logo img-fluid"
+          style="max-width: 180px; margin: 0 auto 10px; display: block;"
+          onerror="this.style.display='none'">
+
+      <h3>Excluir Tenant</h3>
+      <p>Para confirmar, digite o nome exato do tenant abaixo e marque a caixa de entendimento.</p>
+      <strong id="tenant-name" style="display:block;margin-bottom:6px;"></strong>
+
+      <input type="text" placeholder="Digite exatamente como está acima">
+      <label><input type="checkbox"> Eu entendo que esta ação é irreversível.</label>
+
+      <div class="countdown">Espere <span>5</span> s…</div>
+
+      <button id="btn-confirm" class="btn btn-danger" disabled>Excluir agora</button>
+      <button id="btn-cancel"  class="btn btn-edit">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- JS interno -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const overlay = document.querySelector("#modal-exclusao-tenant");
+      const modal = overlay?.querySelector(".modal");
+      if (!overlay || !modal) return;
+
+      const input = modal.querySelector("input[type=text]");
+      const checkbox = modal.querySelector("input[type=checkbox]");
+      const countdownSpan = modal.querySelector(".countdown span");
+      const btnConfirm = modal.querySelector("#btn-confirm");
+      const btnCancel = modal.querySelector("#btn-cancel");
+
+      let hrefDestino = "";
+      let nomeTenant = "";
+      let segundosRestantes = 5;
+      let timer = null;
+
+      document.querySelectorAll(".solicitar-exclusao").forEach(link => {
+        link.addEventListener("click", e => {
+          e.preventDefault();
+          nomeTenant = link.dataset.tenantName;
+          hrefDestino = link.dataset.href;
+          abrirModal();
+        });
+      });
+
+      function abrirModal() {
+        modal.querySelector("#tenant-name").textContent = nomeTenant;
+        input.value = "";
+        checkbox.checked = false;
+        segundosRestantes = 5;
+        atualizarEstadoBotao();
+        atualizarCountdown();
+        overlay.style.display = "flex";
+        input.focus();
+        timer = setInterval(() => {
+          segundosRestantes--;
+          atualizarCountdown();
+          atualizarEstadoBotao();
+          if (segundosRestantes <= 0) clearInterval(timer);
+        }, 1000);
+      }
+
+      function fecharModal() {
+        overlay.style.display = "none";
+        clearInterval(timer);
+      }
+
+      overlay.addEventListener("click", e => {
+        if (e.target === overlay) fecharModal();
+      });
+
+      btnCancel.addEventListener("click", fecharModal);
+
+      [input, checkbox].forEach(el => {
+        el.addEventListener("input", atualizarEstadoBotao);
+        el.addEventListener("change", atualizarEstadoBotao);
+      });
+
+      function atualizarCountdown() {
+        countdownSpan.textContent = segundosRestantes;
+      }
+
+      function atualizarEstadoBotao() {
+        const nomeOk = input.value.trim() === nomeTenant;
+        const aceite = checkbox.checked;
+        const tempoOk = segundosRestantes <= 0;
+        btnConfirm.disabled = !(nomeOk && aceite && tempoOk);
+      }
+
+      btnConfirm.addEventListener("click", () => {
+        window.location.href = hrefDestino;
+      });
+    });
+  </script>
+</body>
+</html>

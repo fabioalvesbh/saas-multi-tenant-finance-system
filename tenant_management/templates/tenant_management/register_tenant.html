@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Tenant</title>
+    <link rel="icon" type="image/png" href="{% static 'logo/Road-icon.png' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 20px;
+        }
+
+        .user-info-box {
+            text-align: right;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .user-info-box strong {
+            display: inline-block;
+            min-width: 160px;
+        }
+
+        .online-users {
+            margin-top: 5px;
+        }
+
+        .logo {
+            display: block;
+            margin: 0 auto 20px auto;
+            max-width: 300px;
+            height: auto;
+        }
+
+        h1, h2 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="text"], input[type="email"], input[type="password"], select {
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+        }
+
+        .back-button {
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .back-button:hover {
+            background-color: #d32f2f;
+        }
+
+        .inline-field {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .inline-field input {
+            width: 48%;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Registrar Novo Tenant</h1>
+
+    <div class="form-container">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn">Registrar Tenant</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

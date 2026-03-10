@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerenciar Informativos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-4">
+
+    <h2 class="mb-4">📢 Gerenciar Informativos de Manutenção</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} shadow-sm">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" class="card p-4 shadow-sm mb-5 bg-white rounded">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="titulo" class="form-label">Título:</label>
+            <input type="text" name="titulo" id="titulo" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="mensagem" class="form-label">Mensagem:</label>
+            <textarea name="mensagem" id="mensagem" class="form-control" rows="4" required></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="data_programada" class="form-label">Data Programada:</label>
+            <input type="date" name="data_programada" id="data_programada" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Salvar Informativo</button>
+    </form>
+
+    <h4 class="mb-3">🗂️ Informativos Cadastrados</h4>
+    <ul class="list-group shadow-sm">
+        {% for info in informativos %}
+            <li class="list-group-item">
+                <strong>{{ info.titulo }}</strong> — {{ info.data_programada|date:"d/m/Y" }}<br>
+                <small class="text-muted">{{ info.mensagem }}</small>
+            </li>
+        {% empty %}
+            <li class="list-group-item">Nenhum informativo cadastrado.</li>
+        {% endfor %}
+    </ul>
+
+</div>
+
+<!-- Bootstrap JS (opcional, caso queira interações futuras) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

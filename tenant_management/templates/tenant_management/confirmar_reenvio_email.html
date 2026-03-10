@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar Reenvio - SaaS Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .confirm-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="confirm-card">
+        <div class="card-header bg-warning text-dark p-4">
+            <h3 class="mb-0">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Confirmação de Reenvio Necessária
+            </h3>
+        </div>
+        
+        <div class="card-body p-4">
+            <div class="alert alert-warning">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Atenção!</strong> Alguns dos usuários selecionados já receberam este email anteriormente.
+            </div>
+            
+            {% if ja_enviados %}
+            <div class="mb-4">
+                <h5 class="text-danger">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Já Receberam ({{ ja_enviados|length }}):
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Email</th>
+                                <th>Schema</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trial in ja_enviados %}
+                            <tr>
+                                <td><strong>{{ trial.name }}</strong></td>
+                                <td>{{ trial.email }}</td>
+                                <td><code>{{ trial.schema_name }}</code></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if nao_enviados %}
+            <div class="mb-4">
+                <h5 class="text-success">
+                    <i class="fas fa-paper-plane me-2"></i>
+                    Novos Envios ({{ nao_enviados|length }}):
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Email</th>
+                                <th>Schema</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trial in nao_enviados %}
+                            <tr>
+                                <td><strong>{{ trial.name }}</strong></td>
+                                <td>{{ trial.email }}</td>
+                                <td><code>{{ trial.schema_name }}</code></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="alert alert-info">
+                <strong>O que deseja fazer?</strong>
+                <ul class="mb-0 mt-2">
+                    <li><strong>Enviar Apenas Novos:</strong> Envia apenas para quem ainda não recebeu ({{ nao_enviados|length }})</li>
+                    <li><strong>Reenviar Para Todos:</strong> Reenvia para todos selecionados, incluindo quem já recebeu ({{ ja_enviados|length|add:nao_enviados|length }})</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card-footer bg-light p-4">
+            <form method="post">
+                {% csrf_token %}
+                {% for id in trial_ids %}
+                <input type="hidden" name="trial_ids" value="{{ id }}">
+                {% endfor %}
+                
+                <div class="d-flex justify-content-between">
+                    <a href="/tenant_management/trials/enviar-email-depoimento/" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Cancelar
+                    </a>
+                    
+                    <div>
+                        {% if nao_enviados %}
+                        <button type="submit" name="reenviar" value="nao" class="btn btn-success me-2">
+                            <i class="fas fa-paper-plane me-1"></i>
+                            Enviar Apenas Novos ({{ nao_enviados|length }})
+                        </button>
+                        {% endif %}
+                        
+                        <button type="submit" name="reenviar" value="sim" class="btn btn-warning">
+                            <i class="fas fa-redo me-1"></i>
+                            Reenviar Para Todos ({{ ja_enviados|length|add:nao_enviados|length }})
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

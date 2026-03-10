@@ -1,0 +1,281 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Contas Trial – Painel Administrativo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f9f9f9;
+      padding: 20px;
+    }
+
+    h2 {
+      color: #1A5276;
+      margin-bottom: 20px;
+    }
+
+    .table thead th {
+      background-color: #1A5276;
+      color: white;
+      position: relative;
+    }
+
+    .table thead th.sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .table thead th.sortable:hover {
+      background-color: #154360;
+    }
+
+    .table thead th.sortable::after {
+      content: ' ⇅';
+      opacity: 0.5;
+      font-size: 0.9em;
+      margin-left: 5px;
+    }
+
+    .table thead th.sorted-asc::after {
+      content: ' ↑';
+      opacity: 1;
+      color: #ffc107;
+    }
+
+    .table thead th.sorted-desc::after {
+      content: ' ↓';
+      opacity: 1;
+      color: #ffc107;
+    }
+
+    .btn-sm {
+      font-size: 0.85rem;
+    }
+
+    code {
+      background-color: #eef;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .nav-link {
+      color: #1A5276;
+    }
+
+    .nav-link:hover {
+      text-decoration: underline;
+    }
+
+    .badge-counter {
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+    }
+
+    .expiring-soon {
+      background-color: #fff3cd;
+    }
+
+    .expired {
+      background-color: #f8d7da;
+    }
+
+    .sort-info {
+      font-size: 0.9rem;
+      padding: 0.5rem;
+      background-color: #e7f3ff;
+      border-left: 4px solid #1A5276;
+      margin-bottom: 1rem;
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.9rem;
+      text-align: center;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+
+<header class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0"><i class="bi bi-stars text-warning"></i> Contas em período Trial (7 dias)</h2>
+      <span class="badge bg-primary badge-counter">
+        <i class="bi bi-person-badge"></i> Total: <span id="totalTrials">{{ trials|length }}</span>
+      </span>
+    </div>
+    <nav>
+      <a class="nav-link d-inline-block me-3" href="{% url 'tenant_management:tenant_list' %}" onclick="carregarPagina(event,this)">
+        <i class="bi bi-diagram-3"></i> Lista de Tenants
+      </a>
+      <a class="nav-link d-inline-block me-3" href="{% url 'tenant_management:lista_assinaturas' %}" onclick="carregarPagina(event,this)">
+        <i class="bi bi-person-plus"></i> Assinaturas Pendentes
+      </a>
+      <a class="nav-link d-inline-block me-3" href="{% url 'tenant_management:lista_renovacoes' %}" onclick="carregarPagina(event,this)">
+        <i class="bi bi-arrow-repeat"></i> Renovações de Plano Pendentes
+      </a>
+      <a class="nav-link d-inline-block me-3" href="{% url 'tenant_management:lista_trials' %}">
+        <i class="bi bi-stars"></i> Contas Trial
+      </a>
+      <a class="nav-link d-inline-block me-3" href="{% url 'tenant_management:enviar_email_depoimento_trial' %}">
+        <i class="bi bi-envelope-heart text-success"></i> Enviar Email Depoimento (40% OFF)
+      </a>
+    </nav>
+  </header>
+
+  <main>
+    {% if trials %}
+      <div class="sort-info">
+        <i class="bi bi-info-circle"></i> 
+        <strong>Clique nos cabeçalhos das colunas de data para ordenar:</strong>
+        <br>
+        <small>↑ = Mais antigo primeiro (ascendente) | ↓ = Mais recente primeiro (descendente)</small>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle" id="trialsTable">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Schema</th>
+              <th>E-mail</th>
+              <th>Telefone</th>
+              <th class="sortable" data-sort="inicio">
+                Início
+              </th>
+              <th class="sortable" data-sort="expira">
+                Expira em
+              </th>
+              <th>Plano</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="trialsTableBody">
+            {% for t in trials %}
+              <tr data-inicio="{{ t.created_at|date:'Y-m-d' }}" 
+                  data-expira="{{ t.paid_until|date:'Y-m-d' }}"
+                  data-inicio-timestamp="{{ t.created_at.timestamp }}"
+                  data-expira-timestamp="{{ t.paid_until.timestamp }}">
+                <td>{{ t.name }}</td>
+                <td><code>{{ t.schema_name }}</code></td>
+                <td>{{ t.email }}</td>
+                <td>{{ t.telefone }}</td>
+                <td>{{ t.created_at|date:"d/m/Y" }}</td>
+                <td>{{ t.paid_until|date:"d/m/Y" }}</td>
+                <td class="text-uppercase">{{ t.plano }}</td>
+                <td>
+                  <a href="{% url 'tenant_management:lista_assinaturas' %}?email={{ t.email }}"
+                     class="btn btn-outline-primary btn-sm"
+                     onclick="carregarPagina(event,this)">
+                    <i class="bi bi-arrow-right-circle"></i> Converter para Paga
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="alert alert-info">Nenhuma conta Trial cadastrada no momento.</div>
+    {% endif %}
+  </main>
+
+  <footer class="mt-5">
+    Sistema SaaS Demo – Plataforma Multi-Tenant © {{ now|date:"Y" }}
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (function() {
+      let currentSort = { column: null, direction: null };
+
+      function carregarPagina(event, link) {
+        event.preventDefault();
+        window.location.href = link.href;
+      }
+
+      function sortTable(column) {
+        const tbody = document.getElementById('trialsTableBody');
+        if (!tbody) return;
+        
+        const rows = Array.from(tbody.getElementsByTagName('tr'));
+        
+        // Determinar direção da ordenação
+        if (currentSort.column === column) {
+          currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+          currentSort.column = column;
+          currentSort.direction = 'asc';
+        }
+
+        // Ordenar as linhas comparando timestamps
+        rows.sort((a, b) => {
+          const aTimestamp = parseFloat(a.getAttribute(`data-${column}-timestamp`));
+          const bTimestamp = parseFloat(b.getAttribute(`data-${column}-timestamp`));
+          
+          if (currentSort.direction === 'asc') {
+            return aTimestamp - bTimestamp;
+          } else {
+            return bTimestamp - aTimestamp;
+          }
+        });
+
+        // Limpar e repopular a tabela
+        tbody.innerHTML = '';
+        rows.forEach(row => tbody.appendChild(row));
+
+        // Atualizar indicadores visuais
+        document.querySelectorAll('#trialsTable .sortable').forEach(th => {
+          th.classList.remove('sorted-asc', 'sorted-desc');
+        });
+        
+        const currentHeader = document.querySelector(`#trialsTable th[data-sort="${column}"]`);
+        if (currentHeader) {
+          currentHeader.classList.add(`sorted-${currentSort.direction}`);
+        }
+
+        highlightExpiringRows();
+      }
+
+      function highlightExpiringRows() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const rows = document.querySelectorAll('#trialsTableBody tr');
+        
+        rows.forEach(row => {
+          const expiraDateStr = row.getAttribute('data-expira');
+          if (!expiraDateStr) return;
+          
+          const expiraDate = new Date(expiraDateStr + 'T00:00:00');
+          const daysUntilExpiry = Math.ceil((expiraDate - today) / (1000 * 60 * 60 * 24));
+          
+          row.classList.remove('expiring-soon', 'expired');
+          
+          if (daysUntilExpiry < 0) {
+            row.classList.add('expired');
+          } else if (daysUntilExpiry <= 2) {
+            row.classList.add('expiring-soon');
+          }
+        });
+      }
+
+      // Adicionar event listeners aos cabeçalhos sortable
+      document.querySelectorAll('#trialsTable .sortable').forEach(th => {
+        th.addEventListener('click', function() {
+          sortTable(this.getAttribute('data-sort'));
+        });
+      });
+
+      // Executar ao carregar
+      highlightExpiringRows();
+
+      // Tornar carregarPagina disponível globalmente se necessário
+      window.carregarPagina = carregarPagina;
+    })();
+  </script>
+</body>
+</html>

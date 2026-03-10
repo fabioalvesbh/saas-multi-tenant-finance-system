@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Agendar reunião - Comunicação Interna</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    {% load static %}
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #020617;
+            color: #e5e7eb;
+        }
+        .page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.25rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+            background: rgba(15, 23, 42, 0.97);
+            backdrop-filter: blur(16px);
+        }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .brand {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.1rem;
+            margin-top: 4px;
+        }
+        .brand-logo {
+            height: 36px;
+        }
+        .brand-text {
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #38bdf8;
+        }
+        .top-nav {
+            display: flex;
+            gap: 0.4rem;
+        }
+        .top-nav a {
+            text-decoration: none;
+        }
+        .top-nav-button {
+            padding: 0.35rem 0.8rem;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            font-size: 0.85rem;
+            color: #e5e7eb;
+            background: transparent;
+            cursor: pointer;
+        }
+        .top-nav-button.active {
+            background: rgba(37, 99, 235, 0.4);
+            border-color: rgba(96, 165, 250, 0.7);
+        }
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .icon-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: #020617;
+            color: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .icon-button:hover {
+            background: #0b1220;
+        }
+        .notif-wrapper {
+            position: relative;
+        }
+        .notif-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 16px;
+            height: 16px;
+            border-radius: 999px;
+            background: #f97316;
+            color: #020617;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        .notif-dropdown {
+            position: absolute;
+            right: 0;
+            top: 44px;
+            width: 260px;
+            background: #020617;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+            padding: 0.4rem 0;
+            display: none;
+            z-index: 30;
+        }
+        .notif-item {
+            padding: 0.5rem 0.8rem;
+            cursor: pointer;
+            min-height: 44px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .notif-item:hover {
+            background: rgba(30, 64, 175, 0.5);
+        }
+        .notif-title {
+            font-size: 0.86rem;
+        }
+        .notif-meta {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+        .profile-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 999px;
+            background: #020617;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .profile-button span {
+            color: #60a5fa;
+        }
+        .profile-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #bfdbfe;
+            font-weight: 700;
+        }
+        .profile-avatar img {
+            width: 24px;
+            height: 24px;
+            border-radius: 999px;
+            object-fit: cover;
+        }
+        .profile-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 40;
+        }
+        .profile-modal {
+            width: 100%;
+            max-width: 420px;
+            margin: 1rem;
+            background: #020617;
+            border-radius: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.9);
+            padding: 1.6rem 1.7rem 1.4rem;
+            max-height: calc(100vh - 2rem);
+            overflow-y: auto;
+        }
+        .profile-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .profile-modal-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .profile-close {
+            border: none;
+            background: transparent;
+            color: #9ca3af;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        .profile-field-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #6b7280;
+        }
+        .profile-field-value {
+            font-size: 0.9rem;
+            color: #e5e7eb;
+            margin-bottom: 0.7rem;
+        }
+        .profile-section-title {
+            margin-top: 0.8rem;
+            margin-bottom: 0.3rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #9ca3af;
+        }
+        .profile-modal input[type="password"] {
+            width: 100%;
+            padding: 0.55rem 0.7rem;
+            border-radius: 0.6rem;
+            border: 1px solid #4b5563;
+            background: #020617;
+            color: #e5e7eb;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .profile-modal input[type="password"]:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
+        }
+        .profile-actions {
+            margin-top: 0.6rem;
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+        .btn-small-primary {
+            padding: 0.45rem 0.9rem;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #022c22;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .btn-small-ghost {
+            padding: 0.4rem 0.85rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            background: transparent;
+            color: #e5e7eb;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+        }
+        .card {
+            width: 100%;
+            max-width: 980px;
+            background: #020617;
+            border-radius: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.9);
+            padding: 1.6rem 1.7rem 1.4rem;
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr);
+            gap: 1.5rem;
+        }
+        .card-title {
+            grid-column: 1 / -1;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.1rem;
+        }
+        .card-subtitle {
+            grid-column: 1 / -1;
+            font-size: 0.86rem;
+            color: #9ca3af;
+            margin-bottom: 0.9rem;
+        }
+        .schedule-column {
+            border-right: 1px solid rgba(31, 41, 55, 0.9);
+            padding-right: 1.2rem;
+        }
+        .day-column {
+            padding-left: 0.5rem;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+        }
+        label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #9ca3af;
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+        input[type="text"],
+        input[type="datetime-local"],
+        select {
+            width: 100%;
+            padding: 0.55rem 0.7rem;
+            border-radius: 0.6rem;
+            border: 1px solid #4b5563;
+            background: #020617;
+            color: #e5e7eb;
+            font-size: 0.92rem;
+        }
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
+        }
+        .dt-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .dt-wrapper input[type="datetime-local"] {
+            width: 100%;
+            padding-right: 2.2rem;
+        }
+        .dt-button {
+            position: absolute;
+            right: 0.4rem;
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            background: #020617;
+            color: #e5e7eb;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dt-button:hover {
+            background: rgba(15, 23, 42, 0.9);
+        }
+        .helptext {
+            font-size: 0.78rem;
+            color: #6b7280;
+            margin-top: 0.2rem;
+        }
+        .btn-primary {
+            margin-top: 0.4rem;
+            padding: 0.65rem 0.9rem;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #022c22;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-secondary-link {
+            margin-top: 0.6rem;
+            font-size: 0.85rem;
+            color: #9ca3af;
+            text-decoration: none;
+        }
+        .btn-secondary-link:hover {
+            color: #e5e7eb;
+        }
+        .meetings-list {
+            margin-top: 1.6rem;
+            border-top: 1px solid rgba(31, 41, 55, 0.9);
+            padding-top: 1.1rem;
+        }
+        .meetings-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.7rem;
+            font-size: 0.86rem;
+            color: #9ca3af;
+        }
+        .meetings-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .meeting-item {
+            padding: 0.55rem 0.65rem;
+            border-radius: 0.6rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            font-size: 0.86rem;
+        }
+        .meeting-title {
+            font-weight: 500;
+        }
+        .meeting-meta {
+            font-size: 0.78rem;
+            color: #9ca3af;
+            margin-top: 0.15rem;
+        }
+        .meeting-link {
+            font-size: 0.8rem;
+            color: #bfdbfe;
+        }
+        .calendar {
+            margin-top: 0.8rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            overflow: hidden;
+        }
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0.8rem;
+            background: rgba(15, 23, 42, 0.9);
+            font-size: 0.86rem;
+        }
+        .calendar-nav button {
+            background: transparent;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            border-radius: 999px;
+            color: #e5e7eb;
+            font-size: 0.8rem;
+            padding: 0.15rem 0.55rem;
+            cursor: pointer;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            font-size: 0.75rem;
+        }
+        .calendar-day-header {
+            padding: 0.4rem 0.35rem;
+            text-align: center;
+            background: #020617;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .calendar-cell {
+            min-height: 56px;
+            padding: 0.25rem 0.35rem;
+            border-top: 1px solid rgba(31, 41, 55, 0.9);
+            border-right: 1px solid rgba(31, 41, 55, 0.9);
+            background: #020617;
+        }
+        .calendar-cell:nth-child(7n) {
+            border-right: none;
+        }
+        .calendar-day-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+        }
+        .calendar-day-outside {
+            color: #4b5563;
+        }
+        .calendar-day-today {
+            border: 1px solid #38bdf8;
+        }
+        .calendar-day-selected {
+            background: linear-gradient(135deg, #38bdf8, #1d4ed8);
+            color: #0b1120;
+            font-weight: 600;
+        }
+        .calendar-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: #22c55e;
+            margin-top: 0.15rem;
+        }
+        .calendar-day-link {
+            text-decoration: none;
+            color: inherit;
+        }
+        .meetings-list {
+            margin-top: 0.5rem;
+            border-top: 1px solid rgba(31, 41, 55, 0.9);
+            padding-top: 0.9rem;
+        }
+        .meetings-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.7rem;
+            font-size: 0.86rem;
+            color: #9ca3af;
+        }
+        .meetings-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .meeting-item {
+            padding: 0.55rem 0.65rem;
+            border-radius: 0.6rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            font-size: 0.86rem;
+        }
+        .meeting-title {
+            font-weight: 500;
+        }
+        .meeting-meta {
+            font-size: 0.78rem;
+            color: #9ca3af;
+            margin-top: 0.15rem;
+        }
+        .meeting-link {
+            font-size: 0.8rem;
+            color: #bfdbfe;
+        }
+        .day-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .btn-primary-small {
+            padding: 0.45rem 0.75rem;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #022c22;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .meet-now-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 60;
+        }
+        .meet-now-modal {
+            width: 100%;
+            max-width: 1100px;
+            height: 80vh;
+            max-height: 760px;
+            background: #020617;
+            border-radius: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.95);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .meet-now-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.9rem;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.95);
+            font-size: 0.9rem;
+        }
+        .meet-now-modal-title {
+            font-weight: 500;
+        }
+        .meet-now-close {
+            border: none;
+            background: transparent;
+            color: #9ca3af;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        .meet-now-frame {
+            flex: 1;
+            border: none;
+            width: 100%;
+            background: #000;
+        }
+        @media (max-width: 768px) {
+            .topbar {
+                padding: 0.5rem 0.75rem;
+                min-height: 52px;
+            }
+            .topbar-left {
+                gap: 0.5rem;
+            }
+            .brand-text {
+                font-size: 0.7rem;
+            }
+            .brand-logo {
+                height: 28px;
+            }
+            .top-nav {
+                display: none;
+            }
+            .content {
+                padding: 1.4rem 1rem;
+            }
+            .card {
+                padding: 1.4rem 1.25rem 1.2rem;
+                grid-template-columns: 1fr;
+            }
+            .schedule-column {
+                border-right: none;
+                padding-right: 0;
+                border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+                padding-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <header class="topbar">
+        <div class="topbar-left">
+            <div class="brand">
+                <img src="{% static 'logo/kuttner_do_brasil_branca.png' %}" alt="Kuttner do Brasil" class="brand-logo">
+                <div class="brand-text">Comunicação Interna</div>
+            </div>
+            <div class="top-nav">
+                <a href="{% url 'chat:home' %}">
+                    <button class="top-nav-button">Chat</button>
+                </a>
+                <a href="{% url 'chamados:home' %}">
+                    <button class="top-nav-button">Chamados</button>
+                </a>
+                <a href="{% url 'chat:meet_now' %}">
+                    <button class="top-nav-button">Reunir agora</button>
+                </a>
+                <a href="{% url 'chat:schedule_meeting' %}">
+                    <button class="top-nav-button active">Reuniões</button>
+                </a>
+                {% if request.user.username == "administrator" %}
+                    <a href="{% url 'chamados:dashboard' %}">
+                        <button class="top-nav-button">Dashboard</button>
+                    </a>
+                {% endif %}
+                {% if request.user.is_superuser %}
+                    <a href="{% url 'usuarios:user_list' %}">
+                        <button class="top-nav-button">Usuários</button>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="topbar-actions">
+            <div class="notif-wrapper">
+                <button class="icon-button" title="Notificações" id="notif-button">
+                    🔔
+                </button>
+                <div class="notif-badge" id="notif-count" style="display:none;">0</div>
+                <div class="notif-dropdown" id="notif-dropdown">
+                    <div class="notif-item" id="notif-empty">
+                        <div class="notif-meta">Sem novas mensagens.</div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="profile-button" id="open-profile">
+                <div class="profile-avatar">
+                    {% if request.user.profile.avatar %}
+                        <img src="{{ request.user.profile.avatar.url }}" alt="Avatar">
+                    {% else %}
+                        {{ request.user.username|slice:":1"|upper }}
+                    {% endif %}
+                </div>
+                <span>{{ request.user.username }}</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="content">
+        <div class="card">
+            <div class="card-title">Reuniões</div>
+            <div class="card-subtitle">
+                Veja suas reuniões no calendário e agende novas para os usuários internos.
+            </div>
+
+            <div class="schedule-column">
+                <div class="calendar">
+                    <div class="calendar-header">
+                        <div class="calendar-nav">
+                            <a href="?year={{ prev_year }}&month={{ prev_month }}&dia={{ selected_date|date:'Y-m-d' }}">
+                                <button type="button">« Mês anterior</button>
+                            </a>
+                        </div>
+                        <div>
+                            {{ year }} - {{ month|date:"m" }}
+                        </div>
+                        <div class="calendar-nav">
+                            <a href="?year={{ next_year }}&month={{ next_month }}&dia={{ selected_date|date:'Y-m-d' }}">
+                                <button type="button">Próximo mês »</button>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="calendar-grid">
+                        {% for wd in "DSTQQSS" %}
+                            <div class="calendar-day-header">{{ wd }}</div>
+                        {% endfor %}
+                        {% for week in month_weeks %}
+                            {% for d in week %}
+                                {% with d.date as ddate %}
+                                    <div class="calendar-cell">
+                                        <a href="?year={{ year }}&month={{ month }}&dia={{ ddate|date:'Y-m-d' }}" class="calendar-day-link">
+                                            <div class="calendar-day-number
+                                                {% if not d.in_month %} calendar-day-outside{% endif %}
+                                                {% if ddate == selected_date %} calendar-day-selected{% elif ddate == today %} calendar-day-today{% endif %}
+                                            ">
+                                                {{ ddate.day }}
+                                            </div>
+                                        </a>
+                                        {% if d.has_meetings %}
+                                            <div class="calendar-dot"></div>
+                                        {% endif %}
+                                    </div>
+                                {% endwith %}
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="day-column">
+                <div class="day-actions">
+                    <div>Reuniões de {{ selected_date|date:"d/m/Y" }}</div>
+                    <button type="button" class="btn-primary-small" onclick="document.getElementById('schedule-modal').style.display='flex'">
+                        Agendar reunião
+                    </button>
+                </div>
+                <div class="meetings-list">
+                    {% if meetings %}
+                        <div class="meetings-items">
+                            {% for m in meetings %}
+                                <div class="meeting-item">
+                                    <div class="meeting-title">
+                                        {{ m.title }}
+                                    </div>
+                                    <div class="meeting-meta">
+                                        {% if m.scheduled_for %}
+                                            {{ m.scheduled_for|date:"H:i" }} •
+                                        {% else %}
+                                            Sem horário definido •
+                                        {% endif %}
+                                        Criada por {{ m.organizer.profile.display_name|default:m.organizer.username }}
+                                    </div>
+                                    <div class="meeting-link">
+                                        Link: <a href="https://meet.kuttner.com.br/{{ m.room_name }}" target="_blank">abrir reunião</a>
+                                    </div>
+                                    {% if m.organizer_id == request.user.id %}
+                                        <div style="margin-top:0.4rem;display:flex;gap:0.4rem;">
+                                            <form method="post" action="{% url 'chat:cancel_meeting' m.pk %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn-primary-small" style="background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fee2e2;">
+                                                    Cancelar
+                                                </button>
+                                            </form>
+                                            <button type="button" class="btn-primary-small" onclick="openEditMeeting('{{ m.pk }}','{{ m.title|escapejs }}','{% if m.scheduled_for %}{{ m.scheduled_for|date:'Y-m-d\\TH:i' }}{% endif %}')">
+                                                Editar
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="helptext">Nenhuma reunião agendada para este dia.</div>
+                    {% endif %}
+                </div>
+                <a href="{% url 'chat:home' %}" class="btn-secondary-link">← Voltar para o chat</a>
+            </div>
+        </div>
+    </main>
+
+    <div id="schedule-modal" style="position:fixed;inset:0;background:rgba(15,23,42,0.8);display:none;align-items:center;justify-content:center;z-index:50;">
+        <div style="width:100%;max-width:520px;background:#020617;border-radius:1rem;border:1px solid rgba(148,163,184,0.35);box-shadow:0 20px 40px rgba(15,23,42,0.9);padding:1.5rem 1.5rem 1.2rem;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;">
+                <div id="schedule-modal-title" style="font-size:1rem;font-weight:600;">Agendar reunião</div>
+                <button type="button" onclick="closeScheduleModal()" style="background:transparent;border:none;color:#9ca3af;font-size:1.2rem;cursor:pointer;">×</button>
+            </div>
+            <form method="post" id="schedule-form">
+                {% csrf_token %}
+                <input type="hidden" name="meeting_id" id="id_meeting_id">
+                <div>
+                    <label for="{{ form.titulo.id_for_label }}">Título</label>
+                    {{ form.titulo }}
+                </div>
+                <div>
+                    <label for="{{ form.quando.id_for_label }}">Data e hora (opcional)</label>
+                    <div class="dt-wrapper">
+                        {{ form.quando }}
+                        <button type="button" class="dt-button" onclick="(function(){var el=document.getElementById('{{ form.quando.id_for_label }}'); if(el && el.showPicker){el.showPicker();} else if(el){el.focus();}})()">
+                            📅
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label for="{{ form.participantes.id_for_label }}">Participantes</label>
+                    {{ form.participantes }}
+                    {% if form.participantes.help_text %}
+                        <div class="helptext">{{ form.participantes.help_text }}</div>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.convidados_externos.id_for_label }}">Convidados externos</label>
+                    {{ form.convidados_externos }}
+                    {% if form.convidados_externos.help_text %}
+                        <div class="helptext">{{ form.convidados_externos.help_text }}</div>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn-primary" style="margin-top:0.8rem;">Enviar convites pelo chat</button>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="profile-modal-backdrop" id="profile-modal">
+    <div class="profile-modal">
+        <div class="profile-modal-header">
+            <div class="profile-modal-title">Perfil</div>
+            <button class="profile-close" type="button" id="close-profile">×</button>
+        </div>
+        <div>
+            <div class="profile-field-label">Foto</div>
+            <div class="profile-field-value" style="display:flex;align-items:center;gap:0.6rem;">
+                {% if request.user.profile.avatar %}
+                    <img src="{{ request.user.profile.avatar.url }}" alt="Avatar"
+                         style="width:48px;height:48px;border-radius:999px;object-fit:cover;border:1px solid rgba(148,163,184,0.6);">
+                {% else %}
+                    <span style="font-size:0.85rem;color:#9ca3af;">Nenhuma foto cadastrada.</span>
+                {% endif %}
+                <a href="{% url 'usuarios:update_avatar' %}" class="btn-small-primary" style="padding:0.3rem 0.7rem;font-size:0.8rem;">
+                    Alterar foto
+                </a>
+            </div>
+            <div class="profile-field-label">Nome</div>
+            <div class="profile-field-value">
+                {{ request.user.profile.display_name|default:request.user.get_username }}
+            </div>
+            <div class="profile-field-label">Departamento</div>
+            <div class="profile-field-value">
+                {{ request.user.profile.department|default:"—" }}
+            </div>
+            <div class="profile-field-label">E-mail</div>
+            <div class="profile-field-value">
+                {{ request.user.email|default:"—" }}
+            </div>
+        </div>
+
+        <div class="profile-section-title">Atualizar senha</div>
+        <form method="post" action="{% url 'usuarios:update_password' %}">
+            {% csrf_token %}
+            <input type="password" name="new_password1" placeholder="Nova senha" required>
+            <input type="password" name="new_password2" placeholder="Confirmar nova senha" required>
+            <div class="profile-actions">
+                <button type="submit" class="btn-small-primary">Salvar senha</button>
+            </div>
+        </form>
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <div class="profile-actions" style="margin-top: 0.5rem;">
+                <button type="submit" class="btn-small-ghost">Sair</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="meet-now-modal-backdrop" id="meet-now-modal">
+    <div class="meet-now-modal">
+        <div class="meet-now-modal-header">
+            <div class="meet-now-modal-title">Reunião agora</div>
+            <button type="button" class="meet-now-close" id="meet-now-close">×</button>
+        </div>
+        <iframe id="meet-now-iframe" class="meet-now-frame" allow="camera; microphone; fullscreen; display-capture"></iframe>
+    </div>
+</div>
+<script>
+    function closeScheduleModal() {
+        document.getElementById('schedule-modal').style.display = 'none';
+        document.getElementById('id_meeting_id').value = '';
+        document.getElementById('schedule-modal-title').textContent = 'Agendar reunião';
+    }
+    function openEditMeeting(id, title, whenValue) {
+        const modal = document.getElementById('schedule-modal');
+        modal.style.display = 'flex';
+        document.getElementById('schedule-modal-title').textContent = 'Editar reunião';
+        document.getElementById('id_meeting_id').value = id;
+        const titleInput = document.getElementById('{{ form.titulo.id_for_label }}');
+        const whenInput = document.getElementById('{{ form.quando.id_for_label }}');
+        if (titleInput) {
+            titleInput.value = title;
+        }
+        if (whenInput && whenValue) {
+            whenInput.value = whenValue;
+        }
+    }
+    const notifButton = document.getElementById("notif-button");
+    const notifCount = document.getElementById("notif-count");
+    const notifDropdown = document.getElementById("notif-dropdown");
+    const notifEmpty = document.getElementById("notif-empty");
+
+    if (notifButton && notifDropdown) {
+        notifButton.addEventListener("click", () => {
+            const visible = notifDropdown.style.display === "block";
+            notifDropdown.style.display = visible ? "none" : "block";
+        });
+        document.addEventListener("click", (event) => {
+            if (
+                !notifDropdown.contains(event.target) &&
+                !notifButton.contains(event.target)
+            ) {
+                notifDropdown.style.display = "none";
+            }
+        });
+    }
+
+    let lastNotifTotal = 0;
+    let audioCtx = null;
+
+    function initAudioContext() {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            if (!audioCtx) {
+                audioCtx = new AudioCtx();
+            }
+        } catch (e) {
+            audioCtx = null;
+        }
+    }
+
+    document.addEventListener(
+        "click",
+        () => {
+            initAudioContext();
+        },
+        { once: true }
+    );
+
+    function playNotificationSound() {
+        try {
+            if (!audioCtx) return;
+            const oscillator = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            oscillator.type = "sine";
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            oscillator.connect(gain);
+            gain.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.15);
+        } catch (e) {
+        }
+    }
+
+    function canShowDesktopNotification() {
+        return (
+            "Notification" in window &&
+            Notification.permission === "granted" &&
+            document.visibilityState !== "visible"
+        );
+    }
+
+    function requestNotificationPermissionIfNeeded() {
+        if (!("Notification" in window)) {
+            return;
+        }
+        if (Notification.permission === "default") {
+            Notification.requestPermission();
+        }
+    }
+
+    if (notifButton) {
+        notifButton.addEventListener("click", () => {
+            requestNotificationPermissionIfNeeded();
+        });
+    }
+
+    async function refreshNotifications() {
+        try {
+            const response = await fetch("{% url 'chat:notifications' %}", {
+                headers: {"X-Requested-With": "XMLHttpRequest"},
+            });
+            if (!response.ok) return;
+            const data = await response.json();
+            if (!notifCount || !notifDropdown || !notifEmpty) return;
+            if (!data.total) {
+                notifCount.style.display = "none";
+                notifEmpty.style.display = "block";
+                Array.from(notifDropdown.querySelectorAll(".notif-item"))
+                    .slice(1)
+                    .forEach((el) => el.remove());
+                return;
+            }
+            if (data.total > lastNotifTotal) {
+                const onlyNew = data.items.slice(0, data.total - lastNotifTotal);
+                playNotificationSound();
+
+                if (canShowDesktopNotification()) {
+                    onlyNew.forEach((item) => {
+                        const body =
+                            (item.last_text || "Nova mensagem") +
+                            " (" +
+                            item.count +
+                            (item.count > 1 ? " mensagens)" : " mensagem)");
+                        const n = new Notification(item.name, {
+                            body: body,
+                            icon: "{% static 'logo/kuttner_do_brasil_branca.png' %}",
+                        });
+                        n.onclick = () => {
+                            window.focus();
+                            window.location.href = "/chat/with/" + item.user_id + "/";
+                            n.close();
+                        };
+                    });
+                }
+            }
+            lastNotifTotal = data.total;
+
+            notifCount.textContent = data.total;
+            notifCount.style.display = "flex";
+            notifEmpty.style.display = "none";
+
+            Array.from(notifDropdown.querySelectorAll(".notif-item"))
+                .slice(1)
+                .forEach((el) => el.remove());
+
+            data.items.forEach((item) => {
+                const el = document.createElement("div");
+                el.className = "notif-item";
+                el.addEventListener("click", () => {
+                    window.location.href = "/chat/with/" + item.user_id + "/";
+                });
+                const title = document.createElement("div");
+                title.className = "notif-title";
+                title.textContent = item.name;
+                const meta = document.createElement("div");
+                meta.className = "notif-meta";
+                meta.textContent =
+                    item.last_text + " • " + item.time_display + " (" + item.count + ")";
+                el.appendChild(title);
+                el.appendChild(meta);
+                notifDropdown.appendChild(el);
+            });
+        } catch (e) {
+        }
+    }
+
+    setInterval(refreshNotifications, 2000);
+
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+            navigator.serviceWorker.register("/service-worker.js");
+        });
+    }
+
+    const profileModal = document.getElementById("profile-modal");
+    const openProfile = document.getElementById("open-profile");
+    const closeProfile = document.getElementById("close-profile");
+
+    if (openProfile && profileModal && closeProfile) {
+        openProfile.addEventListener("click", () => {
+            profileModal.style.display = "flex";
+        });
+        closeProfile.addEventListener("click", () => {
+            profileModal.style.display = "none";
+        });
+        profileModal.addEventListener("click", (event) => {
+            if (event.target === profileModal) {
+                profileModal.style.display = "none";
+            }
+        });
+    }
+
+    (function () {
+        const meetNowHref = "{% url 'chat:meet_now' %}";
+        const meetModal = document.getElementById("meet-now-modal");
+        const meetFrame = document.getElementById("meet-now-iframe");
+        const meetClose = document.getElementById("meet-now-close");
+        if (!meetModal || !meetFrame || !meetClose) return;
+
+        function openMeetNow(url) {
+            meetFrame.src = url;
+            meetModal.style.display = "flex";
+        }
+
+        function closeMeetNow() {
+            meetModal.style.display = "none";
+            meetFrame.src = "";
+        }
+
+        meetClose.addEventListener("click", closeMeetNow);
+        meetModal.addEventListener("click", (event) => {
+            if (event.target === meetModal) {
+                closeMeetNow();
+            }
+        });
+
+        const meetLinks = document.querySelectorAll('a[href="' + meetNowHref + '"]');
+        meetLinks.forEach((link) => {
+            link.addEventListener("click", async (event) => {
+                event.preventDefault();
+                try {
+                    const response = await fetch(meetNowHref, {
+                        headers: {"X-Requested-With": "XMLHttpRequest"},
+                    });
+                    if (!response.ok) {
+                        window.location.href = meetNowHref;
+                        return;
+                    }
+                    const data = await response.json();
+                    if (!data.room_url) {
+                        window.location.href = meetNowHref;
+                        return;
+                    }
+                    openMeetNow(data.room_url);
+                } catch (e) {
+                    window.location.href = meetNowHref;
+                }
+            });
+        });
+    })();
+</script>
+</body>
+</html>
+

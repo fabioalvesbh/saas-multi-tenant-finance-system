@@ -1,0 +1,21 @@
+<!-- tenant_management/templates/tenant_management/confirm_delete_tenant.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deletar Tenant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h3 class="text-center">Tem certeza que deseja deletar o tenant "{{ tenant.name }}"?</h3>
+        <form method="post" class="text-center">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger mt-3">Sim, Deletar</button>
+            <a href="{% url 'tenant_management:tenant_list' %}" class="btn btn-secondary mt-3">Cancelar</a>
+        </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar Email Depoimento - Trials</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+        }
+        
+        .card {
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+        
+        .badge-custom {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        
+        .btn-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            transition: transform 0.2s;
+        }
+        
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .alert-custom {
+            border-left: 4px solid;
+            border-radius: 8px;
+        }
+        
+        .contador-box {
+            background: #e3f2fd;
+            padding: 15px 20px;
+            border-radius: 8px;
+            display: inline-block;
+            font-size: 16px;
+        }
+        
+        .preview-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .nav-back {
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 10px;
+            opacity: 0.9;
+            transition: opacity 0.2s;
+        }
+        
+        .nav-back:hover {
+            opacity: 1;
+            color: white;
+        }
+        
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid px-4">
+        <div class="main-container">
+            
+            <!-- Cabeçalho -->
+            <div class="header-gradient">
+                <a href="/tenant_management/trials/" class="nav-back">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar para Lista de Trials
+                </a>
+                <h2 class="mb-2 mt-2">
+                    <i class="fas fa-envelope-open-text me-2"></i>
+                    Enviar Email: Oferta 40% OFF por Depoimento
+                </h2>
+                <p class="mb-0 opacity-90">
+                    Selecione os usuários em trial para enviar a oferta exclusiva de desconto
+                </p>
+            </div>
+
+            <!-- Conteúdo -->
+            <div class="p-4">
+                
+                <!-- Alert Informativo -->
+                <div class="alert alert-info alert-custom mb-4" style="border-left-color: #0dcaf0;">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-info-circle me-3 mt-1" style="font-size: 1.5em;"></i>
+                        <div>
+                            <h5 class="alert-heading mb-2">Como funciona:</h5>
+                            <p class="mb-2">
+                                <strong>Objetivo:</strong> Enviar email oferecendo 40% de desconto na primeira assinatura em troca de um depoimento sobre o uso da plataforma.
+                            </p>
+                            <ul class="mb-0">
+                                <li>Comemorando 10 depoimentos coletados</li>
+                                <li>Desconto único válido para Mensal, Semestral ou Anual</li>
+                                <li>Usuário deve enviar depoimento via Chat de Suporte</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensagens de Feedback -->
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <strong>
+                            {% if message.tags == 'success' %}
+                                <i class="fas fa-check-circle me-2"></i>
+                            {% elif message.tags == 'warning' %}
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                            {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                <i class="fas fa-times-circle me-2"></i>
+                            {% else %}
+                                <i class="fas fa-info-circle me-2"></i>
+                            {% endif %}
+                        </strong>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Formulário -->
+                <form method="post" id="formEnvio">
+                    {% csrf_token %}
+                    
+                    <!-- Card Lista de Trials -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-users me-2"></i>
+                                    Usuários Trial 
+                                    <span class="badge bg-primary ms-2">{{ trials.count }} total</span>
+                                </h5>
+                                <div class="mt-2 mt-md-0">
+                                    <button type="button" class="btn btn-sm btn-outline-primary me-2" onclick="selecionarTodos()">
+                                        <i class="fas fa-check-square me-1"></i> Selecionar Todos
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="desselecionarTodos()">
+                                        <i class="fas fa-square me-1"></i> Desselecionar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body p-0">
+                            {% if trials %}
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="50" class="text-center">
+                                                <input type="checkbox" id="selectAll" class="form-check-input" onchange="toggleAll()" style="cursor: pointer;">
+                                            </th>
+                                            <th>Cliente/Empresa</th>
+                                            <th>Email</th>
+                                            <th>Schema</th>
+                                            <th>Criado em</th>
+                                            <th>Expira em</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for trial in trials %}
+                                        <tr>
+                                            <td class="text-center">
+                                                <input type="checkbox" 
+                                                       name="trial_ids" 
+                                                       value="{{ trial.id }}" 
+                                                       class="form-check-input trial-checkbox"
+                                                       style="cursor: pointer;">
+                                            </td>
+                                            <td>
+                                                <strong class="text-dark">{{ trial.name }}</strong>
+                                            </td>
+                                            <td>
+                                                {% if trial.email %}
+                                                    <span class="text-primary">
+                                                        <i class="fas fa-envelope me-1"></i>
+                                                        {{ trial.email }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-danger">
+                                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                                        <em>Sem email cadastrado</em>
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <code>{{ trial.schema_name }}</code>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    <i class="far fa-calendar-alt me-1"></i>
+                                                    {{ trial.created_at|date:"d/m/Y H:i" }}
+                                                </small>
+                                            </td>
+                                            <td>
+                                                {% if trial.paid_until %}
+                                                    <span class="badge badge-custom" style="background-color: #ffc107; color: #000;">
+                                                        <i class="far fa-clock me-1"></i>
+                                                        {{ trial.paid_until|date:"d/m/Y" }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge badge-custom bg-secondary">Sem data</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                                <h5 class="text-muted">Nenhum usuário em trial encontrado</h5>
+                                <p class="text-muted">Não há usuários trial cadastrados no momento.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        {% if trials %}
+                        <div class="card-footer bg-light">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                <div class="contador-box mb-2 mb-md-0">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <strong><span id="contador-selecionados">0</span> selecionado(s)</strong>
+                                </div>
+                                <div>
+                                    <a href="/tenant_management/trials/" class="btn btn-secondary me-2">
+                                        <i class="fas fa-times me-1"></i> Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-gradient" id="btnEnviar">
+                                        <i class="fas fa-paper-plane me-1"></i>
+                                        Enviar Emails
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </form>
+
+                <!-- Preview do Email -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="fas fa-eye me-2"></i>
+                            Preview do Email que será enviado
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="preview-section">
+                            <div class="d-flex align-items-start mb-3">
+                                <i class="fas fa-envelope fa-2x text-primary me-3"></i>
+                                <div style="flex: 1;">
+                                    <strong class="d-block mb-1">📧 Assunto do Email:</strong>
+                                    <div class="alert alert-secondary mb-0 py-2">
+                                        🎉 Oferta Exclusiva: 40% de desconto + ajude outros usuários!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <strong class="d-block mb-3">📋 Conteúdo do Email inclui:</strong>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="list-unstyled mb-3">
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i> 
+                                        Saudação personalizada com nome
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i> 
+                                        Explicação da oferta (40% OFF único)
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i> 
+                                        Motivo da seleção (trial inscrito)
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i> 
+                                        Instruções passo a passo claras
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-unstyled mb-3">
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i> 
+                                        Tabela completa com preços originais e com desconto
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i> 
+                                        Call-to-action destacado (botão)
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i> 
+                                        Design responsivo e profissional
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i> 
+                                        Compatível com todos clientes de email
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning alert-custom" style="border-left-color: #ffc107;">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Informações solicitadas ao usuário:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Nome completo, CPF/CNPJ</li>
+                                <li>Plano escolhido e método de pagamento</li>
+                                <li>Depoimento sobre a experiência com a plataforma</li>
+                                <li>Autorização para uso do depoimento no site</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Função para selecionar/desselecionar todos
+        function toggleAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.trial-checkbox');
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            atualizarContador();
+        }
+
+        // Selecionar todos
+        function selecionarTodos() {
+            document.getElementById('selectAll').checked = true;
+            toggleAll();
+        }
+
+        // Desselecionar todos
+        function desselecionarTodos() {
+            document.getElementById('selectAll').checked = false;
+            toggleAll();
+        }
+
+        // Atualizar contador de selecionados
+        function atualizarContador() {
+            const selecionados = document.querySelectorAll('.trial-checkbox:checked').length;
+            const total = document.querySelectorAll('.trial-checkbox').length;
+            document.getElementById('contador-selecionados').textContent = selecionados;
+            
+            // Atualizar checkbox "Selecionar Todos"
+            const selectAll = document.getElementById('selectAll');
+            if (selecionados === 0) {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+            } else if (selecionados === total) {
+                selectAll.checked = true;
+                selectAll.indeterminate = false;
+            } else {
+                selectAll.checked = false;
+                selectAll.indeterminate = true;
+            }
+        }
+
+        // Inicialização quando página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Adicionar evento de mudança nos checkboxes
+            const checkboxes = document.querySelectorAll('.trial-checkbox');
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', atualizarContador);
+            });
+            
+            // Validação antes de enviar
+            document.getElementById('formEnvio').addEventListener('submit', function(e) {
+                const selecionados = document.querySelectorAll('.trial-checkbox:checked').length;
+                
+                if (selecionados === 0) {
+                    e.preventDefault();
+                    alert('⚠️ Por favor, selecione pelo menos um usuário trial para enviar o email.');
+                    return false;
+                }
+                
+                // Confirmar envio
+                const confirma = confirm(
+                    `Confirma o envio de emails para ${selecionados} usuário(s)?\n\n` +
+                    `Os emails serão enviados imediatamente com a oferta de 40% de desconto.`
+                );
+                
+                if (!confirma) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Desabilitar botão para evitar duplo clique
+                const btnEnviar = document.getElementById('btnEnviar');
+                btnEnviar.disabled = true;
+                btnEnviar.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Enviando...';
+            });
+        });
+    </script>
+</body>
+</html>
