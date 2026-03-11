@@ -1,148 +1,122 @@
 ## SaaS Multi-Tenant Communication System
 
-Aplicação Django multi-tenant para comunicação interna entre equipes, com:
-- **Chat** organizado por usuários e perfis.
-- **Chamados/ocorrências** com acompanhamento de status.
-- **Agendamento de reuniões** com envio de convites por e-mail.
+Clean Django-based multi-tenant application for internal team communication, featuring:
+- **Chat** organized by users and profiles.
+- **Tickets/incidents** with full lifecycle tracking.
+- **Meeting scheduling** with email invitations.
 
-Este repositório é uma versão limpa, pronta para servir como **portfólio**, sem dados reais nem credenciais sensíveis.
+This repository is a sanitized version, designed to serve as a **portfolio project**, with no real data or sensitive credentials.
 
-### Tecnologias principais
+### Main technologies
 - **Python** 3.10+
 - **Django** 5
 - **PostgreSQL**
-- **Docker** e **Docker Compose** (opcional, recomendado)
+- **Docker** and **Docker Compose** (recommended)
 
-### Estrutura de pastas (resumo)
-- `config`: configuração do projeto Django.
-- `core`: páginas e utilitários base.
-- `usuarios`: gestão de usuários e perfis.
-- `chat`: conversas e reuniões.
-- `chamados`: registro e acompanhamento de chamados.
+### Folder structure (overview)
+- `config`: Django project configuration (settings, URLs, tenants, API).
+- `core`: base pages and utilities.
+- `usuarios`: user and profile management.
+- `chat`: conversations and meetings.
+- `chamados`: ticket/incident registration and tracking.
+- `tenant_management`: tenant lifecycle, subscriptions, webhooks and analytics.
 
-### Como rodar com Docker (recomendado)
+### Running with Docker (recommended)
 
-1. Crie um arquivo `.env` a partir do modelo:
+1. Create a `.env` file from the example:
    ```bash
    cp .env.example .env
    ```
-2. Ajuste as variáveis no `.env` (por exemplo, `DJANGO_SECRET_KEY`, credenciais de banco e e-mail).
-3. Suba os serviços:
+2. Adjust environment variables (`DJANGO_SECRET_KEY`, DB and email credentials, etc.).
+3. Start the services:
    ```bash
    docker compose up --build
    ```
-4. Acesse a aplicação em `http://localhost:8000`.
+4. Access the app at `http://localhost:8000`.
 
-5. Para explorar a **API** e a documentação:
+5. To explore the **API** and documentation:
    - Swagger UI: `http://localhost:8000/api/schema/swagger/`
    - Schema OpenAPI (JSON): `http://localhost:8000/api/schema/`
 
-### Como rodar localmente (sem Docker)
+### Running locally (without Docker)
 
-1. Crie e ative um ambiente virtual:
+1. Create and activate a virtualenv:
    ```bash
    python3 -m venv venv
    source venv/bin/activate
    pip install -r requirements.txt
    ```
-2. Defina as variáveis de ambiente (por exemplo via `.env` + `export`/`direnv`) seguindo o `.env.example`.
-3. Execute as migrações e o servidor de desenvolvimento:
+2. Configure environment variables (for example using `.env` + `export`/`direnv`) following `.env.example`.
+3. Run migrations and start the dev server:
    ```bash
    python manage.py migrate
    python manage.py runserver
    ```
-
-4. (Opcional, mas recomendado para testar rápido) Crie um usuário de demonstração:
+4. (Optional, recommended for quick testing) Create a demo user:
    ```bash
    python manage.py create_demo_user
    ```
-   Isso cria/atualiza o usuário:
-   - **usuário**: `username`
-   - **senha**: `username`
+   This creates/updates the user:
+   - **username**: `username`
+   - **password**: `username`
 
-### Configuração de ambiente
+### Environment configuration
 
-As principais configurações sensíveis (chave secreta, banco de dados, e-mail e base das URLs de reunião) são lidas de variáveis de ambiente em `config/settings.py`.  
-Use o arquivo `.env.example` como referência para preparar o seu `.env` em desenvolvimento.
+All sensitive configuration (secret key, database, email and meeting URLs) is read from environment variables in `config/settings.py`.  
+Use `.env.example` as a reference to prepare your local `.env`.
 
-### Arquitetura multi-tenant (django-tenants)
+### Multi-tenant architecture (django-tenants)
 
-- **Modelo de tenant**: `tenant_management.Client` herda de `TenantMixin` e representa cada cliente/empresa, com `schema_name` próprio no PostgreSQL.
-- **Modelo de domínio**: `tenant_management.Domain` herda de `DomainMixin` e mapeia domínios (ex.: `cliente1.app.example-saas.com`) para o tenant correto.
-- **Separação de apps**:
-  - `SHARED_APPS`: `django_tenants`, apps core do Django e `tenant_management` (administra tenants, assinaturas, webhooks, campanhas).
-  - `TENANT_APPS`: `core`, `usuarios`, `chat`, `chamados` — executados isoladamente por schema.
-- **Resolução de tenant por request**: o `TenantMainMiddleware` (de `django_tenants`) inspeciona o host e escolhe o schema correto, permitindo que a mesma instância sirva múltiplos clientes.
+- **Tenant model**: `tenant_management.Client` extends `TenantMixin` and represents each customer/company, with its own `schema_name` in PostgreSQL.
+- **Domain model**: `tenant_management.Domain` extends `DomainMixin` and maps domains (e.g. `client1.app.example-saas.com`) to the right tenant.
+- **App separation**:
+  - `SHARED_APPS`: `django_tenants`, Django core apps and `tenant_management` (tenant admin, subscriptions, webhooks, campaigns).
+  - `TENANT_APPS`: `core`, `usuarios`, `chat`, `chamados` — executed in isolation per schema.
+- **Request-based tenant resolution**: `TenantMainMiddleware` (from `django_tenants`) inspects the host and chooses the correct schema, allowing a single instance to serve multiple clients.
 
-### Fluxo de criação de empresa (tenant)
+### Company (tenant) creation flow
 
-- Endpoint de criação automática de tenant:
+- Automatic tenant creation endpoint:
   - `POST /api/tenants/`
-  - Exemplo de payload:
+  - Example payload:
     ```json
     {
-      "name": "Empresa Demo",
-      "schema_name": "empresa_demo",
-      "domain": "empresa-demo.localhost",
-      "email": "contato@empresa.com",
+      "name": "Demo Company",
+      "schema_name": "demo_company",
+      "domain": "demo-company.localhost",
+      "email": "contact@company.com",
       "plano": "trial"
     }
     ```
-  - O backend cria o registro em `Client`, associa um `Domain` e o `django-tenants` cria o schema no PostgreSQL.  
-- Autenticação JWT:
-  - Obter token: `POST /api/token/` com `username`/`password`.
-  - Renovar token: `POST /api/token/refresh/`.
-  - As views DRF usam `JWTAuthentication` + permissões padrão, já configuradas em `REST_FRAMEWORK`.
+  - The backend creates the `Client` record, links a `Domain`, and `django-tenants` creates the schema in PostgreSQL.  
+- JWT authentication:
+  - Obtain token: `POST /api/token/` with `username`/`password`.
+  - Refresh token: `POST /api/token/refresh/`.
+  - DRF views use `JWTAuthentication` with default permissions configured in `REST_FRAMEWORK`.
 
-### Objetivo como portfólio
+### Portfolio focus
 
-Este projeto demonstra:
-- Organização de um projeto Django multi-app.
-- Uso de PostgreSQL e boas práticas básicas de configuração por ambiente.
-- Integração de fluxo de chat, chamados e reuniões em um único sistema SaaS multi-tenant.
+This project demonstrates:
+- Organization of a multi-app Django project.
+- Use of PostgreSQL and environment-driven configuration.
+- Integration of chat, tickets and meetings into a single SaaS multi-tenant system.
 
-Pensando como **pleno**, o código destaca:
-- **Escalabilidade**: isolamento por schema, roteamento multi-tenant e uma API documentada para automatizar onboarding de novas empresas.
-- **Isolamento de dados**: uso explícito de `Client`/`Domain` e `django-tenants` para separar dados por tenant no banco.
-- **Versionamento e automação**: dependências em `requirements.txt`, containerização com Docker e criação automática de tenants via endpoint.
-- **Documentação**: `README` detalhado, plus documentação OpenAPI/Swagger em `/api/schema/swagger/`.
+From a **mid-level engineer** perspective, the code emphasizes:
+- **Scalability**: schema-based isolation, multi-tenant routing and an API that automates tenant onboarding.
+- **Data isolation**: explicit use of `Client`/`Domain` and `django-tenants` to separate data per tenant at the database level.
+- **Versioning & automation**: pinned dependencies in `requirements.txt`, Docker setup and automatic tenant creation endpoint.
+- **Documentation**: detailed `README` plus OpenAPI/Swagger docs at `/api/schema/swagger/`.
 
 ---
 
-## (Histórico) Comunicação Interna - Chat & Chamados
+## (Historical) Internal Communication – Chat & Tickets
 
-> Esta seção registra o contexto original interno do projeto.  
-> Para o portfólio, foque na seção “SaaS Multi-Tenant Communication System” acima.
+> This section preserves the original internal context of the project.  
+> For portfolio purposes, focus on the “SaaS Multi-Tenant Communication System” section above.
 
-## Comunicação Interna - Chat & Chamados
+The initial version of this project started as an internal communication tool between gatehouse and office sectors, with:
+- Real-time chat.
+- Ticket/incident logging and tracking.
 
-Projeto Django para comunicação interna entre portaria e setores administrativos, com chat em tempo real e registro de ocorrências.
-
-### Tecnologias principais
-- Python 3.10
-- Django 5
-- PostgreSQL
-
-### Estrutura inicial de apps
-- `core`: configurações e utilitários comuns.
-- `usuarios`: gestão de usuários e perfis (portaria, gerente, TI, compras, etc.).
-- `chat`: conversas em tempo real entre portaria e setores.
-- `chamados`: registro e acompanhamento de ocorrências.
-
-### Ambiente virtual
-
-```bash
-cd /var/www/chat_comunicacao
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-### Configuração de banco de dados (PostgreSQL)
-
-Banco de exemplo configurado em `config/settings.py` (via variáveis de ambiente), por padrão:
-- **BD**: `app_db`
-- **Usuário**: `app_user`
-
-Atualize a senha do banco em `config/settings.py` antes de subir para produção.
+The multi-tenant SaaS architecture evolved from this base to support multiple companies on the same platform.
 
