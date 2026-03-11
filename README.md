@@ -33,6 +33,10 @@ Este repositório é uma versão limpa, pronta para servir como **portfólio**, 
    ```
 4. Acesse a aplicação em `http://localhost:8000`.
 
+5. Para explorar a **API** e a documentação:
+   - Swagger UI: `http://localhost:8000/api/schema/swagger/`
+   - Schema OpenAPI (JSON): `http://localhost:8000/api/schema/`
+
 ### Como rodar localmente (sem Docker)
 
 1. Crie e ative um ambiente virtual:
@@ -70,12 +74,38 @@ Use o arquivo `.env.example` como referência para preparar o seu `.env` em dese
   - `TENANT_APPS`: `core`, `usuarios`, `chat`, `chamados` — executados isoladamente por schema.
 - **Resolução de tenant por request**: o `TenantMainMiddleware` (de `django_tenants`) inspeciona o host e escolhe o schema correto, permitindo que a mesma instância sirva múltiplos clientes.
 
+### Fluxo de criação de empresa (tenant)
+
+- Endpoint de criação automática de tenant:
+  - `POST /api/tenants/`
+  - Exemplo de payload:
+    ```json
+    {
+      "name": "Empresa Demo",
+      "schema_name": "empresa_demo",
+      "domain": "empresa-demo.localhost",
+      "email": "contato@empresa.com",
+      "plano": "trial"
+    }
+    ```
+  - O backend cria o registro em `Client`, associa um `Domain` e o `django-tenants` cria o schema no PostgreSQL.  
+- Autenticação JWT:
+  - Obter token: `POST /api/token/` com `username`/`password`.
+  - Renovar token: `POST /api/token/refresh/`.
+  - As views DRF usam `JWTAuthentication` + permissões padrão, já configuradas em `REST_FRAMEWORK`.
+
 ### Objetivo como portfólio
 
 Este projeto demonstra:
 - Organização de um projeto Django multi-app.
 - Uso de PostgreSQL e boas práticas básicas de configuração por ambiente.
 - Integração de fluxo de chat, chamados e reuniões em um único sistema SaaS multi-tenant.
+
+Pensando como **pleno**, o código destaca:
+- **Escalabilidade**: isolamento por schema, roteamento multi-tenant e uma API documentada para automatizar onboarding de novas empresas.
+- **Isolamento de dados**: uso explícito de `Client`/`Domain` e `django-tenants` para separar dados por tenant no banco.
+- **Versionamento e automação**: dependências em `requirements.txt`, containerização com Docker e criação automática de tenants via endpoint.
+- **Documentação**: `README` detalhado, plus documentação OpenAPI/Swagger em `/api/schema/swagger/`.
 
 ---
 

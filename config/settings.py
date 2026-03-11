@@ -33,6 +33,10 @@ SHARED_APPS = [
     "django.contrib.messages",
     "django.contrib.admin",
     "django.contrib.staticfiles",
+    # APIs e administração de tenants
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "drf_spectacular",
     "tenant_management",
 ]
 
@@ -156,4 +160,24 @@ MEETING_BASE_URL = os.getenv("MEETING_BASE_URL", "https://meet.example.com")
 
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# Django REST Framework / JWT / OpenAPI
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+    ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "SaaS Multi-Tenant Communication API",
+    "DESCRIPTION": "API de comunicação multi-tenant (chat, chamados, gestão de tenants).",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
 
