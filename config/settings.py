@@ -93,6 +93,9 @@ DATABASES = {
     }
 }
 
+# Roteador de banco exigido pelo django-tenants
+DATABASE_ROUTERS = ("django_tenants.routers.TenantSyncRouter",)
+
 
 # Validação de senha
 

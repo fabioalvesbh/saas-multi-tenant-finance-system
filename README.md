@@ -48,6 +48,14 @@ Este repositório é uma versão limpa, pronta para servir como **portfólio**, 
    python manage.py runserver
    ```
 
+4. (Opcional, mas recomendado para testar rápido) Crie um usuário de demonstração:
+   ```bash
+   python manage.py create_demo_user
+   ```
+   Isso cria/atualiza o usuário:
+   - **usuário**: `username`
+   - **senha**: `username`
+
 ### Configuração de ambiente
 
 As principais configurações sensíveis (chave secreta, banco de dados, e-mail e base das URLs de reunião) são lidas de variáveis de ambiente em `config/settings.py`.  
@@ -102,9 +110,9 @@ pip install -r requirements.txt
 
 ### Configuração de banco de dados (PostgreSQL)
 
-Banco já configurado em `config/settings.py` para:
-- **BD**: `comunicacao`
-- **Usuário**: `kuttner`
+Banco de exemplo configurado em `config/settings.py` (via variáveis de ambiente), por padrão:
+- **BD**: `app_db`
+- **Usuário**: `app_user`
 
 Atualize a senha do banco em `config/settings.py` antes de subir para produção.
 
